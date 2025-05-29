@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">MusicPlayerHMI</string>
+    <string name="hint_username">username</string>
+    <string name="hint_password">password</string>
+    <string name="desc_usericon">usericon</string>
+    <string name="desc_passwordicon">passwordicon</string>
+    <string name="login">Login</string>
 </resources>
