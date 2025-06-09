@@ -7,8 +7,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,24 +19,49 @@ import com.example.musicplayerservice.IMusicPlayerInterface;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private String username;
+    private String password;
+
     private IMusicPlayerInterface iMusicPlayerInterface;
     private MusicPlayerServiceConnection musicPlayerServiceConnection;
+
+    private boolean mIsConnected = false;
+
+    private EditText mEditTextUsername;
+    private EditText mEditTextPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button testButton = findViewById(R.id.btn_test);
-        testButton.setOnClickListener(v -> {
-            try {
-                iMusicPlayerInterface.serviceTest();
-            } catch (RemoteException e) {
-                Log.e(TAG, String.valueOf(e));
-            }
-        });
+        Button mLoginButton = findViewById(R.id.btn_test);
+
+        mEditTextUsername = findViewById(R.id.text_username);
+        mEditTextPassword = findViewById(R.id.text_password);
+
 
         bindService();
+
+        if (mIsConnected) {
+            mLoginButton.setOnClickListener(v -> {
+                username = String.valueOf(mEditTextUsername.getText());
+                password = String.valueOf(mEditTextPassword.getText());
+
+                try {
+                    boolean isAuthentication = iMusicPlayerInterface.checkcheckAuthentication(username, password);
+                    if (isAuthentication) {
+                        Toast.makeText(this, "Successfully login", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    } else
+                        Toast.makeText(this, "Username or password error!", Toast.LENGTH_SHORT).show();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void bindService() {
@@ -44,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         musicPlayerServiceConnection = new MusicPlayerServiceConnection();
         musicPlayerIntent.setPackage("com.example.musicplayerservice");
         musicPlayerIntent.setAction("com.example.musicplayerservice.MusicPlayerService");
-        bindService(musicPlayerIntent, musicPlayerServiceConnection, Context.BIND_AUTO_CREATE);
+        mIsConnected = bindService(musicPlayerIntent, musicPlayerServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

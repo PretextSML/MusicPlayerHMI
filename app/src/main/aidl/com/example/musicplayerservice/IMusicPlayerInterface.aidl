@@ -9,4 +9,5 @@ interface IMusicPlayerInterface {
      * and return values in AIDL.
      */
      void serviceTest();
+     boolean checkcheckAuthentication(String username, String password);
 }
