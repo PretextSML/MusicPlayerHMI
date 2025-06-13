@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.musicplayerhmi'
+    namespace 'com.pretext.musicplayerhmi'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.example.musicplayerhmi"
+        applicationId "com.pretext.musicplayerhmi"
         minSdk 34
         targetSdk 35
         versionCode 1
@@ -27,7 +27,7 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
-    buildFeatures{
+    buildFeatures {
         aidl true
     }
 }

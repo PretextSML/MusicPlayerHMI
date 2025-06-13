@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <queries>
-        <package android:name="com.example.musicplayerservice" />
+        <package android:name="com.pretext.musicplayerservice" />
     </queries>
 
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
@@ -27,7 +27,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.musicplayerhmi.LoginActivity" />
     </application>
 
 </manifest>

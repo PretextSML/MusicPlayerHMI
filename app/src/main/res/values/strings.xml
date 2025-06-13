@@ -5,4 +5,6 @@
     <string name="desc_usericon">usericon</string>
     <string name="desc_passwordicon">passwordicon</string>
     <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="get_music_list">Get music list</string>
 </resources>
