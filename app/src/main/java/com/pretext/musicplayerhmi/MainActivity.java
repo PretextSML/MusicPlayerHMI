@@ -1,5 +1,6 @@
 package com.pretext.musicplayerhmi;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +27,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.tabs.TabLayout;
 import com.pretext.musicplayerservice.IMusicPlayerInterface;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
@@ -42,24 +46,40 @@ public class MainActivity extends AppCompatActivity {
     private Boolean mIsConnected = false;
     private Boolean mIsPlayed = false;
     private Boolean mIsPause = false;
+    private Boolean isChanging = false;
     private SeekBar musicProgress;
+
     private ImageButton pauseAndResume;
-    private ImageButton stop;
+
     private TextView currentDurationText;
+    private TextView currentMusic;
+    private TextView totalDurationText;
     private final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
         @Override
         public void onProgressChanged(long currentDuration) {
-            Log.d(TAG, "onProgressChanged: " + currentDuration);
-            musicProgress.setProgress((int) currentDuration);
-            if (currentDuration == 0) {
-                currentDurationText.setText("0:00");
-            } else {
-                currentDurationText.setText(
-                        String.format("%s:%s", (currentDuration / 1000 / 60), (currentDuration / 1000 % 60) / 10 > 0 ? currentDuration / 1000 % 60 : "0" + currentDuration / 1000 % 60));
+            if (!isChanging) {
+                musicProgress.setProgress((int) currentDuration);
             }
         }
+
+        @Override
+        public void onPlayStatusChanged(boolean currentStatus) {
+            if (currentStatus) {
+                pauseAndResume.setBackgroundResource(R.drawable.pause);
+                mIsPlayed = true;
+            } else {
+                pauseAndResume.setBackgroundResource(R.drawable.play);
+                mIsPlayed = false;
+            }
+        }
+
+        @Override
+        public void onFinishPlaying() {
+            Log.d(TAG, "onFinishPlaying");
+            resetToDefault();
+        }
     };
-    private TextView totalDurationText;
+    private TabLayout menu;
     private MusicPlayerServiceConnection musicPlayerServiceConnection;
 
     @Override
@@ -67,49 +87,84 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bindService();
+        menu = findViewById(R.id.tab_layout);
+        menu.addTab(menu.newTab().setText("Music List"));
+        menu.addTab(menu.newTab().setText("Local History"));
 
         currentDurationText = findViewById(R.id.current_time);
+        currentMusic = findViewById(R.id.current_music);
         totalDurationText = findViewById(R.id.total_time);
+        musicProgress = findViewById(R.id.music_progress);
+        musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                currentDurationText.setText(String.format("%s:%s", (progress / 1000 / 60), (progress / 1000 % 60) / 10 > 0 ? (progress / 1000) % 60 : "0" + (progress / 1000) % 60));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                try {
+                    iMusicPlayerInterface.stopTimer();
+                    isChanging = true;
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                try {
+                    if (mIsPlayed || mIsPause) {
+                        iMusicPlayerInterface.setDuration(seekBar.getProgress());
+                    }
+                    isChanging = false;
+                    iMusicPlayerInterface.startTimer();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
         pauseAndResume = findViewById(R.id.play_and_pause);
-        stop = findViewById(R.id.stop_music);
-
         pauseAndResume.setOnClickListener(v -> {
             if (mIsPlayed) {
                 try {
                     iMusicPlayerInterface.pauseMusic();
-                    mIsPlayed = false;
                     mIsPause = true;
-                    pauseAndResume.setBackgroundResource(R.drawable.play);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             } else if (mIsPause) {
                 try {
                     iMusicPlayerInterface.resumeMusic();
-                    mIsPlayed = true;
                     mIsPause = false;
-                    pauseAndResume.setBackgroundResource(R.drawable.pause);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             }
         });
 
-        musicProgress = findViewById(R.id.music_progress);
-
+        ImageButton stop = findViewById(R.id.stop_music);
         stop.setOnClickListener(v -> {
             try {
                 iMusicPlayerInterface.stopMusic();
-                mIsPlayed = false;
-                mIsPause = false;
-                pauseAndResume.setBackgroundResource(R.drawable.play);
-                totalDurationText.setText("0:00");
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
         });
+
+        bindService();
+    }
+
+    public void resetToDefault() {
+        Log.d(TAG, "stopPlaying: ");
+        mIsPlayed = false;
+        mIsPause = false;
+        musicProgress.setMax(0);
+        musicProgress.setProgress(0);
+        pauseAndResume.setBackgroundResource(R.drawable.play);
+        totalDurationText.setText(R.string.default_duration);
+        currentMusic.setText("Now playing: None");
     }
 
     public void bindService() {
@@ -167,19 +222,18 @@ public class MainActivity extends AppCompatActivity {
 
     static class MusicListViewHolder extends RecyclerView.ViewHolder {
         public TextView musicName;
-        public TextView musicArtist;
+        public TextView musicAuthor;
         public ImageView musicAlbum;
         public ConstraintLayout rootView;
 
         public MusicListViewHolder(@NonNull View itemView) {
             super(itemView);
             musicName = itemView.findViewById(R.id.music_name);
-            musicArtist = itemView.findViewById(R.id.music_artist);
+            musicAuthor = itemView.findViewById(R.id.music_artist);
             musicAlbum = itemView.findViewById(R.id.music_album);
             rootView = itemView.findViewById(R.id.root_view);
         }
     }
-
 
     class MusicPlayerServiceConnection implements ServiceConnection {
         @Override
@@ -188,10 +242,12 @@ public class MainActivity extends AppCompatActivity {
             try {
                 musicInfoList = readMusicFile();
                 iMusicPlayerInterface.registerCallback(callback);
-                iMusicPlayerInterface.sendData();
+                iMusicPlayerInterface.startTimer();
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
+
+            resetToDefault();
 
             RecyclerView musicListView = findViewById(R.id.music_list);
             MusicListAdapter musicListAdapter = new MusicListAdapter();
@@ -219,10 +275,13 @@ public class MainActivity extends AppCompatActivity {
             return new MusicListViewHolder(view);
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
             MusicInfo info = musicInfoList.get(position);
             String[] split = info.getMusicName().split(" - ");
+            String name = split[1].substring(0, split[1].length() - 4);
+            String author = split[0];
             String path = info.getMusicPath();
             long duration = info.getMusicDuration();
             byte[] data;
@@ -234,13 +293,20 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
             if (data != null) {
-                Glide.with(getApplicationContext()).load(data).into(holder.musicAlbum);
+                Glide.with(getApplicationContext())
+                        .load(data)
+                        .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                        .into(holder.musicAlbum);
             } else {
-                holder.musicAlbum.setBackgroundResource(R.drawable.album);
+                Glide.with(getApplicationContext())
+                        .load(R.drawable.album_default)
+                        .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                        .into(holder.musicAlbum);
             }
-            holder.musicName.setText(split[1].substring(0, split[1].length() - 4));
-            holder.musicArtist.setText(split[0]);
+            holder.musicName.setText(name);
+            holder.musicAuthor.setText(author);
             holder.rootView.setOnClickListener(v -> {
                 if (!mIsConnected) {
                     Toast.makeText(v.getContext(), "Service not connected!", Toast.LENGTH_SHORT).show();
@@ -248,11 +314,9 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 try {
-                    mIsPlayed = true;
-                    mIsPause = false;
-
+                    currentMusic.setText("Now playing: " + split[1]);
                     musicProgress.setMax((int) duration);
-                    totalDurationText.setText(String.format("%s:%s", (duration / 1000 / 60), (duration / 1000 % 60) / 10 > 0 ? duration / 1000 % 60 : "0" + duration / 1000 % 60));
+                    totalDurationText.setText(String.format("%s:%s", (duration / 1000 / 60), (duration / 1000 % 60) / 10 > 0 ? (duration / 1000) % 60 : "0" + (duration / 1000) % 60));
                     iMusicPlayerInterface.playMusic(path);
                     pauseAndResume.setBackgroundResource(R.drawable.pause);
                 } catch (RemoteException e) {

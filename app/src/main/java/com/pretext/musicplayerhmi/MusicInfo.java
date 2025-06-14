@@ -1,9 +1,9 @@
 package com.pretext.musicplayerhmi;
 
 public class MusicInfo {
-    private String musicName;
-    private String musicPath;
-    private long musicDuration;
+    private final String musicName;
+    private final String musicPath;
+    private final long musicDuration;
 
     public MusicInfo(String musicName, long musicDuration, String musicPath) {
         this.musicName = musicName;
@@ -15,23 +15,11 @@ public class MusicInfo {
         return musicName;
     }
 
-    public void setMusicName(String musicName) {
-        this.musicName = musicName;
-    }
-
     public long getMusicDuration() {
         return musicDuration;
     }
 
-    public void setMusicDuration(long musicDuration) {
-        this.musicDuration = musicDuration;
-    }
-
     public String getMusicPath() {
         return musicPath;
-    }
-
-    public void setMusicPath(String musicPath) {
-        this.musicPath = musicPath;
     }
 }

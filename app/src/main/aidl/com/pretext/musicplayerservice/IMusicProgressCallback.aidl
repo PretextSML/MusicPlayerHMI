@@ -9,4 +9,6 @@ interface IMusicProgressCallback {
      * and return values in AIDL.
      */
     void onProgressChanged(long currentDuration);
+    void onPlayStatusChanged(boolean currentStatus);
+    void onFinishPlaying();
 }

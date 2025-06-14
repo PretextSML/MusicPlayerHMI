@@ -10,13 +10,15 @@ interface IMusicPlayerInterface {
      * and return values in AIDL.
      */
     void playMusic(String musicName);
+    void setDuration(int duration);
     void pauseMusic();
     void resumeMusic();
     void stopMusic();
+
+    void startTimer();
     void stopTimer();
 
     void registerCallback(IMusicProgressCallback callback);
     void unregisterCallback(IMusicProgressCallback callback);
 
-    void sendData();
 }

@@ -7,4 +7,5 @@
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="get_music_list">Get music list</string>
+    <string name="default_duration">0:00</string>
 </resources>
