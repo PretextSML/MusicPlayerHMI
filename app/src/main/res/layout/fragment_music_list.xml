@@ -45,6 +45,7 @@
             android:layout_height="20dp"
             android:ellipsize="marquee"
             android:gravity="center"
+            android:singleLine="true"
             android:textColor="@color/white"
             android:typeface="sans"
             app:layout_constraintBottom_toTopOf="@id/music_progress"

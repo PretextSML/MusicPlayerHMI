@@ -1,8 +1,5 @@
 package com.pretext.musicplayerhmi.fragment;
 
-import static com.pretext.musicplayerhmi.MainActivity.iMusicPlayerInterface;
-import static com.pretext.musicplayerhmi.MainActivity.mIsConnected;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -25,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.pretext.musicplayerhmi.MusicInfo;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.MusicListAdapter;
+import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 import java.util.ArrayList;
@@ -33,6 +31,7 @@ import java.util.List;
 public class MusicListFragment extends Fragment {
 
     private static final String TAG = "[MusicListFragment]";
+    private static MusicListFragment musicListFragment;
     private List<MusicInfo> musicInfoList;
     private TextView currentDurationText;
     private TextView currentMusic;
@@ -73,6 +72,12 @@ public class MusicListFragment extends Fragment {
     private ImageButton stop;
     private Context context;
 
+    public static MusicListFragment getInstance() {
+        if (musicListFragment == null)
+            musicListFragment = new MusicListFragment();
+        return musicListFragment;
+    }
+
     public IMusicProgressCallback getCallback() {
         return callback;
     }
@@ -105,7 +110,7 @@ public class MusicListFragment extends Fragment {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 try {
-                    iMusicPlayerInterface.stopTimer();
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopTimer();
                     isChanging = true;
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
@@ -116,10 +121,10 @@ public class MusicListFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 try {
                     if (mIsPlayed || mIsPause) {
-                        iMusicPlayerInterface.setDuration(seekBar.getProgress());
+                        MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setDuration(seekBar.getProgress());
                     }
                     isChanging = false;
-                    iMusicPlayerInterface.startTimer();
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().startTimer();
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
@@ -130,14 +135,14 @@ public class MusicListFragment extends Fragment {
         pauseAndResume.setOnClickListener(v -> {
             if (mIsPlayed) {
                 try {
-                    iMusicPlayerInterface.pauseMusic();
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().pauseMusic();
                     mIsPause = true;
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             } else if (mIsPause) {
                 try {
-                    iMusicPlayerInterface.resumeMusic();
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().resumeMusic();
                     mIsPause = false;
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
@@ -148,16 +153,13 @@ public class MusicListFragment extends Fragment {
         stop = rootView.findViewById(R.id.stop_music);
         stop.setOnClickListener(v -> {
             try {
-                iMusicPlayerInterface.stopMusic();
+                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopMusic();
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
         });
-
-        if (mIsConnected) {
-            initMusicList();
-            resetToDefault();
-        }
+        initMusicList();
+        resetToDefault();
 
         return rootView;
     }
@@ -166,6 +168,7 @@ public class MusicListFragment extends Fragment {
         RecyclerView musicListView = rootView.findViewById(R.id.music_list);
         MusicListAdapter musicListAdapter = new MusicListAdapter(musicInfoList, context, rootView);
         GridLayoutManager layoutManager = new GridLayoutManager(context, 1);
+        Log.d(TAG, "initMusicList: " + musicListAdapter);
         musicListView.setAdapter(musicListAdapter);
         musicListView.setLayoutManager(layoutManager);
     }

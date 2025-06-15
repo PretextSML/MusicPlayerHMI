@@ -12,6 +12,14 @@ import androidx.fragment.app.Fragment;
 import com.pretext.musicplayerhmi.R;
 
 public class ProfileFragment extends Fragment {
+    private static ProfileFragment profileFragment;
+
+    public static ProfileFragment getInstance() {
+        if (profileFragment == null)
+            profileFragment = new ProfileFragment();
+        return profileFragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

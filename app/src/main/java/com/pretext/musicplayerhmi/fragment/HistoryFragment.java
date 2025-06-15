@@ -12,6 +12,14 @@ import androidx.fragment.app.Fragment;
 import com.pretext.musicplayerhmi.R;
 
 public class HistoryFragment extends Fragment {
+    private static HistoryFragment historyFragment;
+
+    public static HistoryFragment getInstance() {
+        if (historyFragment == null)
+            historyFragment = new HistoryFragment();
+        return historyFragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
