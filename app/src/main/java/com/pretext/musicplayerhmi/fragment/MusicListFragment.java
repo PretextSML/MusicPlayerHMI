@@ -1,15 +1,20 @@
 package com.pretext.musicplayerhmi.fragment;
 
+import android.app.Service;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -69,8 +74,16 @@ public class MusicListFragment extends Fragment {
             resetToDefault();
         }
     };
+    private PopupWindow popupWindow;
+    private ImageButton volume;
     private ImageButton stop;
     private Context context;
+    private AudioManager audioManager;
+    private TextView volumeText;
+    private int maxVolume;
+    private int currentVolume;
+    private boolean isChangingVolume = false;
+
 
     public static MusicListFragment getInstance() {
         if (musicListFragment == null)
@@ -90,11 +103,81 @@ public class MusicListFragment extends Fragment {
         musicInfoList = readMusicFile();
     }
 
+    public void initPopupWindow(View v) {
+        View view = LayoutInflater.from(context).inflate(R.layout.volume_popup, null, false);
+        SeekBar volumeSetting = view.findViewById(R.id.volume_setting);
+        audioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        Log.d(TAG, "initPopupWindow: max = " + maxVolume + ", now = " + currentVolume);
+        volumeSetting.setMax(maxVolume);
+        volumeSetting.setProgress(currentVolume);
+        volumeSetting.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!isChangingVolume) {
+                    if (progress * 100 / maxVolume >= 50) {
+                        volume.setBackgroundResource(R.drawable.volume_loud);
+                    } else if (progress * 100 / maxVolume > 0) {
+                        volume.setBackgroundResource(R.drawable.volume_medium);
+                    } else if (progress == 0) {
+                        volume.setBackgroundResource(R.drawable.volume_mute);
+                    }
+                    volumeText.setText("");
+                } else {
+                    volumeText.setText(Integer.toString(seekBar.getProgress() * 100 / maxVolume));
+                }
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, AudioManager.FLAG_PLAY_SOUND);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                isChangingVolume = true;
+                volume.setBackgroundResource(R.drawable.no_volume);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                isChangingVolume = false;
+                if (seekBar.getProgress() * 100 / maxVolume >= 50) {
+                    volume.setBackgroundResource(R.drawable.volume_loud);
+                } else if (seekBar.getProgress() * 100 / maxVolume > 0) {
+                    volume.setBackgroundResource(R.drawable.volume_medium);
+                } else if (seekBar.getProgress() == 0) {
+                    volume.setBackgroundResource(R.drawable.volume_mute);
+                }
+                volumeText.setText("");
+            }
+        });
+        popupWindow = new PopupWindow(
+                view,
+                Math.round(getResources().getDisplayMetrics().density * 25),
+                Math.round(getResources().getDisplayMetrics().density * 180),
+                true
+        );
+        popupWindow.setTouchable(true);
+        popupWindow.setTouchInterceptor((v1, event) -> false);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
+        popupWindow.showAsDropDown(v, Gravity.CENTER, Gravity.CENTER, 0);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_music_list, container, false);
 
+        audioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        volume = rootView.findViewById(R.id.volume);
+        volumeText = rootView.findViewById(R.id.volume_text);
+        volume.setOnClickListener(v -> initPopupWindow(v));
+        if (currentVolume * 100 / maxVolume >= 50) {
+            volume.setBackgroundResource(R.drawable.volume_loud);
+        } else if (currentVolume * 100 / maxVolume > 0) {
+            volume.setBackgroundResource(R.drawable.volume_medium);
+        } else if (currentVolume == 0) {
+            volume.setBackgroundResource(R.drawable.volume_mute);
+        }
         currentDurationText = rootView.findViewById(R.id.current_time);
         totalDurationText = rootView.findViewById(R.id.total_time);
 

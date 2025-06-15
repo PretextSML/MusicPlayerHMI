@@ -7,7 +7,6 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintTop_toBottomOf="@id/tab_layout">
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/music_list"
         android:layout_width="match_parent"
@@ -56,6 +55,7 @@
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_marginTop="20dp"
+            android:background="@null"
             android:maxHeight="3dp"
             android:minHeight="3dp"
             android:progressDrawable="@drawable/seekbar_background"
@@ -122,5 +122,32 @@
             app:layout_constraintBottom_toBottomOf="@id/play_and_pause"
             app:layout_constraintRight_toLeftOf="@id/skip_previous"
             app:layout_constraintTop_toTopOf="@id/play_and_pause" />
+
+        <RelativeLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintBottom_toBottomOf="@id/play_and_pause"
+            app:layout_constraintLeft_toRightOf="@id/skip_next"
+            app:layout_constraintTop_toTopOf="@id/play_and_pause">
+
+            <ImageButton
+                android:id="@+id/volume"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/volume_loud"
+                android:backgroundTint="@color/white" />
+
+            <TextView
+                android:id="@+id/volume_text"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:textColor="#2a5caa"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:typeface="sans" />
+        </RelativeLayout>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
