@@ -8,6 +8,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,7 +19,9 @@ import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -29,23 +32,22 @@ import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
-
+@SuppressLint("StaticFieldLeak")
 public class MainActivity extends AppCompatActivity {
-
     private static final String TAG = "[MainActivity]";
-    private static MainActivity mainActivity;
-    @SuppressLint("StaticFieldLeak")
     private static Context context;
-    private static Boolean isChanging = false;
-    private static Boolean mIsPlayed = false;
-    private static SeekBar musicProgress;
-    private static ImageButton pauseAndResume;
-    private static Boolean mIsPause = false;
-    private static TextView currentMusic;
-    private static TextView totalDurationText;
-    private static boolean fromList = false;
-    private static boolean stopMusic = false;
-    private static final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
+    FragmentManager fragmentManager;
+    FragmentTransaction fragmentTransaction;
+    private Boolean isChanging = false;
+    private Boolean mIsPlayed = false;
+    private SeekBar musicProgress;
+    private ImageButton pauseAndResume;
+    private Boolean mIsPause = false;
+    private TextView currentMusic;
+    private TextView totalDurationText;
+    private boolean fromList = false;
+    private boolean stopMusic = false;
+    private final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
         @Override
         public void onProgressChanged(long currentDuration) {
             if (!isChanging && musicProgress != null) {
@@ -82,8 +84,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-    FragmentManager fragmentManager;
-    FragmentTransaction fragmentTransaction;
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 1) {
+                Log.d(TAG, "handleMessage: get message from profile fragment");
+                MusicInfo musicInfo = msg.getData().getSerializable("playMusic", MusicInfo.class);
+                boolean isFromList = msg.getData().getBoolean("fromList");
+                if (musicInfo != null) {
+                    playMusic(musicInfo, isFromList);
+                }
+            }
+        }
+    };
     private PopupWindow popupWindow;
     private ImageButton volume;
     private ImageButton stop;
@@ -92,17 +106,27 @@ public class MainActivity extends AppCompatActivity {
     private int maxVolume;
     private int currentVolume;
     private boolean isChangingVolume = false;
+    private Fragment lastFragment;
     private TextView currentDurationText;
 
     public static Context getContext() {
         return context;
     }
 
-    public static IMusicProgressCallback getCallback() {
-        return callback;
+    public void resetToDefault() {
+        new Handler(Looper.getMainLooper()).post(() -> {
+            Log.d(TAG, "stopPlaying");
+            mIsPlayed = false;
+            mIsPause = false;
+            musicProgress.setMax(0);
+            musicProgress.setProgress(0);
+            pauseAndResume.setImageResource(R.drawable.play);
+            totalDurationText.setText(R.string.default_duration);
+            currentMusic.setText("Now playing: None");
+        });
     }
 
-    public static void playMusic(MusicInfo info, boolean isFromList) {
+    public void playMusic(MusicInfo info, boolean isFromList) {
         stopMusic = false;
         Log.d(TAG, "playMusic: " + info.getMusicName());
         String[] split = info.getMusicName().split(" - ");
@@ -121,22 +145,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void resetToDefault() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "stopPlaying");
-                mIsPlayed = false;
-                mIsPause = false;
-                musicProgress.setMax(0);
-                musicProgress.setProgress(0);
-                pauseAndResume.setImageResource(R.drawable.play);
-                totalDurationText.setText(R.string.default_duration);
-                currentMusic.setText("Now playing: None");
-            }
-        });
     }
 
     public void initPopupWindow(View v) {
@@ -233,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
         volume = findViewById(R.id.volume);
-        volume.setOnClickListener(v -> initPopupWindow(v));
+        volume.setOnClickListener(this::initPopupWindow);
         volumeText = findViewById(R.id.volume_text);
 
         if (currentVolume * 100 / maxVolume >= 50) {
@@ -246,11 +254,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initSeekBar() {
+        Log.d(TAG, "initSeekBar: " + currentMusic);
+        
         currentDurationText = findViewById(R.id.current_time);
         totalDurationText = findViewById(R.id.total_time);
         currentMusic = findViewById(R.id.current_music);
         musicProgress = findViewById(R.id.music_progress);
-        Log.d(TAG, "initSeekBar: " + currentMusic);
         musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -326,6 +335,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initFragment() {
+        ProfileFragment.getInstance().setHandler(handler);
+        MusicListFragment.getInstance().setHandler(handler);
+
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.frame_layout, ProfileFragment.getInstance(), "Profile").show(ProfileFragment.getInstance());
@@ -346,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
         initMenu();
         initFragment();
         resetToDefault();
-
+        MusicPlayerServiceConnection.getInstance().setMusicProgressCallback(callback);
         MusicPlayerServiceConnection.getInstance().bindService();
     }
 

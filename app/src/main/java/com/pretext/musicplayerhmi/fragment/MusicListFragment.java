@@ -3,6 +3,7 @@ package com.pretext.musicplayerhmi.fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +29,7 @@ public class MusicListFragment extends Fragment {
     private static MusicListFragment musicListFragment;
     private List<MusicInfo> musicInfoList;
     private View rootView;
+    private Handler handler;
     private Context context;
 
     public static MusicListFragment getInstance() {
@@ -36,6 +38,10 @@ public class MusicListFragment extends Fragment {
         return musicListFragment;
     }
 
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,7 +60,7 @@ public class MusicListFragment extends Fragment {
 
     public void initMusicList() {
         RecyclerView musicListView = rootView.findViewById(R.id.music_list);
-        MusicListAdapter musicListAdapter = new MusicListAdapter(musicInfoList, context, getActivity());
+        MusicListAdapter musicListAdapter = new MusicListAdapter(musicInfoList, context, handler);
         GridLayoutManager layoutManager = new GridLayoutManager(context, 1);
         Log.d(TAG, "initMusicList: " + musicListAdapter);
         musicListView.setAdapter(musicListAdapter);

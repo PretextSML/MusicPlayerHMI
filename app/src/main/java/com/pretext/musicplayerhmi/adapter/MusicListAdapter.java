@@ -1,14 +1,13 @@
 package com.pretext.musicplayerhmi.adapter;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
-import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerhmi.MusicInfo;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
@@ -29,21 +27,16 @@ import java.util.List;
 
 public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
-    private final TextView currentMusic;
-    private final TextView totalDurationText;
-    private final ImageButton pauseAndResume;
-    private final SeekBar musicProgress;
     private final List<MusicInfo> musicInfoList;
     private final Context context;
+    private final Handler handler;
+    private Bundle bundle;
+    private Message message;
 
-    public MusicListAdapter(List<MusicInfo> musicInfoList, Context context, Activity activity) {
+    public MusicListAdapter(List<MusicInfo> musicInfoList, Context context, Handler handler) {
         this.musicInfoList = musicInfoList;
         this.context = context;
-
-        totalDurationText = activity.findViewById(R.id.total_time);
-        currentMusic = activity.findViewById(R.id.current_music);
-        musicProgress = activity.findViewById(R.id.music_progress);
-        pauseAndResume = activity.findViewById(R.id.play_and_pause);
+        this.handler = handler;
     }
 
     @NonNull
@@ -52,6 +45,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
         View view = View.inflate(parent.getContext(), R.layout.music_detail, null);
         return new MusicListViewHolder(view);
     }
+
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -89,8 +83,9 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
         holder.addToMusicList.setOnClickListener(v -> {
             if (!ProfileFragment.getInstance().isInPlayList(info)) {
                 ProfileFragment.getInstance().addToPlayList(info);
-            } else
+            } else {
                 Toast.makeText(v.getContext(), "Music already in music list", Toast.LENGTH_SHORT).show();
+            }
         });
 
         holder.rootView.setOnClickListener(v -> {
@@ -99,7 +94,15 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
                 return;
             }
 
-            MainActivity.playMusic(info, false);
+            bundle = new Bundle();
+            bundle.putSerializable("playMusic", info);
+            bundle.putBoolean("fromList", true);
+
+            message = new Message();
+            message.what = 1;
+            message.setData(bundle);
+
+            handler.sendMessage(message);
         });
     }
 

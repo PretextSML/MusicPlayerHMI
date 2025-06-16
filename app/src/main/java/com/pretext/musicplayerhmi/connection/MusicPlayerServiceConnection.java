@@ -10,11 +10,13 @@ import android.util.Log;
 
 import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerservice.IMusicPlayerInterface;
+import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 public class MusicPlayerServiceConnection implements ServiceConnection {
     private final static String TAG = "[Connection]";
     private static MusicPlayerServiceConnection musicPlayerServiceConnection;
     private IMusicPlayerInterface iMusicPlayerInterface;
+    private IMusicProgressCallback musicProgressCallback;
     private Boolean isConnected;
 
     public static MusicPlayerServiceConnection getInstance() {
@@ -25,6 +27,10 @@ public class MusicPlayerServiceConnection implements ServiceConnection {
 
     public void setMusicPlayerServiceConnection(MusicPlayerServiceConnection musicPlayerServiceConnection) {
         MusicPlayerServiceConnection.musicPlayerServiceConnection = musicPlayerServiceConnection;
+    }
+
+    public void setMusicProgressCallback(IMusicProgressCallback musicProgressCallback) {
+        this.musicProgressCallback = musicProgressCallback;
     }
 
     public IMusicPlayerInterface getMusicPlayerInterface() {
@@ -40,7 +46,7 @@ public class MusicPlayerServiceConnection implements ServiceConnection {
         try {
             Log.d(TAG, "onServiceConnected");
             iMusicPlayerInterface = IMusicPlayerInterface.Stub.asInterface(service);
-            iMusicPlayerInterface.registerCallback(MainActivity.getCallback());
+            iMusicPlayerInterface.registerCallback(musicProgressCallback);
             iMusicPlayerInterface.startTimer();
         } catch (RemoteException e) {
             throw new RuntimeException(e);

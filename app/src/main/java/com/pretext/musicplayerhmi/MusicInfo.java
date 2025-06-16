@@ -1,6 +1,8 @@
 package com.pretext.musicplayerhmi;
 
-public class MusicInfo {
+import java.io.Serializable;
+
+public class MusicInfo implements Serializable {
     private final String musicName;
     private final String musicPath;
     private final long musicDuration;
