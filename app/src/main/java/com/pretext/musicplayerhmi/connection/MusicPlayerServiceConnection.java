@@ -9,7 +9,6 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.pretext.musicplayerhmi.MainActivity;
-import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerservice.IMusicPlayerInterface;
 
 public class MusicPlayerServiceConnection implements ServiceConnection {
@@ -41,7 +40,7 @@ public class MusicPlayerServiceConnection implements ServiceConnection {
         try {
             Log.d(TAG, "onServiceConnected");
             iMusicPlayerInterface = IMusicPlayerInterface.Stub.asInterface(service);
-            iMusicPlayerInterface.registerCallback(MusicListFragment.getInstance().getCallback());
+            iMusicPlayerInterface.registerCallback(MainActivity.getCallback());
             iMusicPlayerInterface.startTimer();
         } catch (RemoteException e) {
             throw new RuntimeException(e);

@@ -6,7 +6,7 @@
 
     <SeekBar
         android:id="@+id/volume_setting"
-        android:layout_width="200dp"
+        android:layout_width="150dp"
         android:layout_height="50dp"
         android:background="@null"
         android:maxHeight="25dp"

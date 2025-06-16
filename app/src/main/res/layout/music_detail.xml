@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_view"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/button_bg">
 
     <ImageView
         android:id="@+id/music_album"
@@ -31,7 +32,7 @@
         android:textSize="18sp"
         android:typeface="sans"
         app:layout_constraintLeft_toRightOf="@id/music_album"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/add_to_music_list"
         app:layout_constraintTop_toTopOf="@id/music_album" />
 
     <TextView
@@ -46,7 +47,7 @@
         android:typeface="sans"
         app:layout_constraintBottom_toBottomOf="@id/music_album"
         app:layout_constraintLeft_toRightOf="@id/music_album"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toLeftOf="@id/add_to_music_list" />
 
     <TextView
         android:layout_width="match_parent"
@@ -56,4 +57,15 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/music_album" />
+
+    <ImageButton
+        android:id="@+id/add_to_music_list"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/button_bg"
+        android:src="@drawable/playlist_add"
+        app:layout_constraintBottom_toBottomOf="@id/music_album"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/music_album" />
 </androidx.constraintlayout.widget.ConstraintLayout>

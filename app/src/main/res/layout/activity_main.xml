@@ -24,5 +24,140 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_bar"
         app:layout_constraintTop_toBottomOf="@id/tab_layout" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="105dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/current_time"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="0:00"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:typeface="sans"
+            app:layout_constraintBottom_toBottomOf="@id/music_progress"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/music_progress"
+            app:layout_constraintTop_toTopOf="@id/music_progress" />
+
+        <TextView
+            android:id="@+id/current_music"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:ellipsize="marquee"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="@color/white"
+            android:typeface="sans"
+            app:layout_constraintBottom_toTopOf="@id/music_progress"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <SeekBar
+            android:id="@+id/music_progress"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="20dp"
+            android:background="@null"
+            android:maxHeight="3dp"
+            android:minHeight="3dp"
+            android:progressDrawable="@drawable/seekbar_background"
+            android:thumb="@drawable/thumb_default"
+            android:thumbTint="#2a5caa"
+            app:layout_constraintBottom_toTopOf="@id/play_and_pause"
+            app:layout_constraintLeft_toRightOf="@id/current_time"
+            app:layout_constraintRight_toLeftOf="@id/total_time"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/total_time"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="0:00"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:typeface="sans"
+            app:layout_constraintBottom_toBottomOf="@id/music_progress"
+            app:layout_constraintLeft_toRightOf="@id/music_progress"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/music_progress" />
+
+        <ImageButton
+            android:id="@+id/skip_previous"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_bg"
+            android:src="@drawable/previous"
+            app:layout_constraintBottom_toBottomOf="@id/play_and_pause"
+            app:layout_constraintRight_toLeftOf="@id/play_and_pause"
+            app:layout_constraintTop_toTopOf="@id/play_and_pause" />
+
+        <ImageButton
+            android:id="@+id/play_and_pause"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:background="@drawable/button_bg"
+            android:src="@drawable/play"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/music_progress" />
+
+        <ImageButton
+            android:id="@+id/skip_next"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/button_bg"
+            android:src="@drawable/next"
+            app:layout_constraintBottom_toBottomOf="@id/play_and_pause"
+            app:layout_constraintLeft_toRightOf="@id/play_and_pause"
+            app:layout_constraintTop_toTopOf="@id/play_and_pause" />
+
+        <ImageButton
+            android:id="@+id/stop_music"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/button_bg"
+            android:src="@drawable/stop"
+            app:layout_constraintBottom_toBottomOf="@id/play_and_pause"
+            app:layout_constraintRight_toLeftOf="@id/skip_previous"
+            app:layout_constraintTop_toTopOf="@id/play_and_pause" />
+
+        <RelativeLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintBottom_toBottomOf="@id/play_and_pause"
+            app:layout_constraintLeft_toRightOf="@id/skip_next"
+            app:layout_constraintTop_toTopOf="@id/play_and_pause">
+
+            <ImageButton
+                android:id="@+id/volume"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                
+                android:background="@drawable/button_bg"
+                android:src="@drawable/volume_loud" />
+
+            <TextView
+                android:id="@+id/volume_text"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:textColor="#2a5caa"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:typeface="sans" />
+        </RelativeLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

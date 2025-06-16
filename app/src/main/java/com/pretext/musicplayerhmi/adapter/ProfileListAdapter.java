@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,17 +16,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
-import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerhmi.MusicInfo;
 import com.pretext.musicplayerhmi.R;
-import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
-import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
+public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
     private final TextView currentMusic;
     private final TextView totalDurationText;
@@ -36,7 +32,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
     private final List<MusicInfo> musicInfoList;
     private final Context context;
 
-    public MusicListAdapter(List<MusicInfo> musicInfoList, Context context, Activity activity) {
+    public ProfileListAdapter(List<MusicInfo> musicInfoList, Context context, Activity activity) {
         this.musicInfoList = musicInfoList;
         this.context = context;
 
@@ -86,21 +82,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
 
         holder.musicName.setText(name);
         holder.musicAuthor.setText(author);
-        holder.addToMusicList.setOnClickListener(v -> {
-            if (!ProfileFragment.getInstance().isInPlayList(info)) {
-                ProfileFragment.getInstance().addToPlayList(info);
-            } else
-                Toast.makeText(v.getContext(), "Music already in music list", Toast.LENGTH_SHORT).show();
-        });
-
-        holder.rootView.setOnClickListener(v -> {
-            if (!MusicPlayerServiceConnection.getInstance().getIsConnected()) {
-                Toast.makeText(v.getContext(), "Service not connected!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            MainActivity.playMusic(info, false);
-        });
+        holder.addToMusicList.setVisibility(View.GONE);
     }
 
     @Override

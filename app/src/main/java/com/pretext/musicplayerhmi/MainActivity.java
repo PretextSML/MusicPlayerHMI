@@ -1,9 +1,22 @@
 package com.pretext.musicplayerhmi;
 
 import android.annotation.SuppressLint;
+import android.app.Service;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.PopupWindow;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -14,17 +27,259 @@ import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
+import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "[MainActivity]";
+    private static MainActivity mainActivity;
     @SuppressLint("StaticFieldLeak")
     private static Context context;
+    private static Boolean isChanging = false;
+    private static Boolean mIsPlayed = false;
+    private static SeekBar musicProgress;
+    private static ImageButton pauseAndResume;
+    private static Boolean mIsPause = false;
+    private static TextView currentMusic;
+    private static TextView totalDurationText;
+    private static boolean fromList = false;
+    private static boolean stopMusic = false;
+    private static final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
+        @Override
+        public void onProgressChanged(long currentDuration) {
+            if (!isChanging && musicProgress != null) {
+                musicProgress.setProgress((int) currentDuration);
+            }
+        }
+
+        @Override
+        public void onPlayStatusChanged(boolean currentStatus) {
+            if (pauseAndResume != null) {
+                if (currentStatus) {
+                    pauseAndResume.setImageResource(R.drawable.pause);
+                    mIsPlayed = true;
+                } else {
+                    pauseAndResume.setImageResource(R.drawable.play);
+                    mIsPlayed = false;
+                }
+            }
+        }
+
+        @Override
+        public void onFinishPlaying() {
+            Log.d(TAG, "onFinishPlaying");
+            if (fromList) {
+                if (!stopMusic) {
+                    if (!ProfileFragment.getInstance().playNext()) {
+                        resetToDefault();
+                    }
+                } else {
+                    resetToDefault();
+                }
+            } else {
+                resetToDefault();
+            }
+        }
+    };
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
+    private PopupWindow popupWindow;
+    private ImageButton volume;
+    private ImageButton stop;
+    private AudioManager audioManager;
+    private TextView volumeText;
+    private int maxVolume;
+    private int currentVolume;
+    private boolean isChangingVolume = false;
+    private TextView currentDurationText;
 
     public static Context getContext() {
         return context;
+    }
+
+    public static IMusicProgressCallback getCallback() {
+        return callback;
+    }
+
+    public static void playMusic(MusicInfo info, boolean isFromList) {
+        stopMusic = false;
+        Log.d(TAG, "playMusic: " + info.getMusicName());
+        String[] split = info.getMusicName().split(" - ");
+        String name = split[1].substring(0, split[1].length() - 4);
+        String path = info.getMusicPath();
+        long duration = info.getMusicDuration();
+        fromList = isFromList;
+
+        currentMusic.setText("Now playing: " + name);
+        musicProgress.setMax((int) duration);
+        totalDurationText.setText(String.format("%s:%s", (duration / 1000 / 60), (duration / 1000 % 60) / 10 > 0 ? (duration / 1000) % 60 : "0" + (duration / 1000) % 60));
+        pauseAndResume.setImageResource(R.drawable.pause);
+
+        try {
+            MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().playMusic(path);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void resetToDefault() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "stopPlaying");
+                mIsPlayed = false;
+                mIsPause = false;
+                musicProgress.setMax(0);
+                musicProgress.setProgress(0);
+                pauseAndResume.setImageResource(R.drawable.play);
+                totalDurationText.setText(R.string.default_duration);
+                currentMusic.setText("Now playing: None");
+            }
+        });
+    }
+
+    public void initPopupWindow(View v) {
+        View view = LayoutInflater.from(context).inflate(R.layout.volume_popup, null, false);
+        SeekBar volumeSetting = view.findViewById(R.id.volume_setting);
+        audioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        Log.d(TAG, "initPopupWindow: max = " + maxVolume + ", now = " + currentVolume);
+        volumeSetting.setMax(maxVolume);
+        volumeSetting.setProgress(currentVolume);
+        volumeSetting.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!isChangingVolume) {
+                    if (progress * 100 / maxVolume >= 50) {
+                        volume.setImageResource(R.drawable.volume_loud);
+                    } else if (progress * 100 / maxVolume > 0) {
+                        volume.setImageResource(R.drawable.volume_medium);
+                    } else if (progress == 0) {
+                        volume.setImageResource(R.drawable.volume_mute);
+                    }
+                    volumeText.setText("");
+                } else {
+                    volumeText.setText(Integer.toString(seekBar.getProgress() * 100 / maxVolume));
+                }
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, AudioManager.FLAG_PLAY_SOUND);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                isChangingVolume = true;
+                volume.setImageResource(R.drawable.no_volume);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                isChangingVolume = false;
+                if (seekBar.getProgress() * 100 / maxVolume >= 50) {
+                    volume.setImageResource(R.drawable.volume_loud);
+                } else if (seekBar.getProgress() * 100 / maxVolume > 0) {
+                    volume.setImageResource(R.drawable.volume_medium);
+                } else if (seekBar.getProgress() == 0) {
+                    volume.setImageResource(R.drawable.volume_mute);
+                }
+                volumeText.setText("");
+            }
+        });
+        popupWindow = new PopupWindow(
+                view,
+                Math.round(getResources().getDisplayMetrics().density * 25),
+                Math.round(getResources().getDisplayMetrics().density * 150),
+                true
+        );
+        popupWindow.setTouchable(true);
+        popupWindow.setTouchInterceptor((v1, event) -> false);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
+        popupWindow.showAsDropDown(v, Gravity.CENTER, Gravity.CENTER, 0);
+    }
+
+    public void initButton() {
+        pauseAndResume = findViewById(R.id.play_and_pause);
+        pauseAndResume.setOnClickListener(v -> {
+            if (mIsPlayed) {
+                try {
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().pauseMusic();
+                    mIsPause = true;
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (mIsPause) {
+                try {
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().resumeMusic();
+                    mIsPause = false;
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        stop = findViewById(R.id.stop_music);
+        stop.setOnClickListener(v -> {
+            try {
+                stopMusic = true;
+                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopMusic();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public void initVolume() {
+        audioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+        volume = findViewById(R.id.volume);
+        volume.setOnClickListener(v -> initPopupWindow(v));
+        volumeText = findViewById(R.id.volume_text);
+
+        if (currentVolume * 100 / maxVolume >= 50) {
+            volume.setImageResource(R.drawable.volume_loud);
+        } else if (currentVolume * 100 / maxVolume > 0) {
+            volume.setImageResource(R.drawable.volume_medium);
+        } else if (currentVolume == 0) {
+            volume.setImageResource(R.drawable.volume_mute);
+        }
+    }
+
+    public void initSeekBar() {
+        currentDurationText = findViewById(R.id.current_time);
+        totalDurationText = findViewById(R.id.total_time);
+        currentMusic = findViewById(R.id.current_music);
+        musicProgress = findViewById(R.id.music_progress);
+        Log.d(TAG, "initSeekBar: " + currentMusic);
+        musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                currentDurationText.setText(String.format("%s:%s", (progress / 1000 / 60), (progress / 1000 % 60) / 10 > 0 ? (progress / 1000) % 60 : "0" + (progress / 1000) % 60));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                try {
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopTimer();
+                    isChanging = true;
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                try {
+                    if (mIsPlayed || mIsPause) {
+                        MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setDuration(seekBar.getProgress());
+                    }
+                    isChanging = false;
+                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().startTimer();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     public void initMenu() {
@@ -85,8 +340,12 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initFragment();
+        initSeekBar();
+        initButton();
+        initVolume();
         initMenu();
+        initFragment();
+        resetToDefault();
 
         MusicPlayerServiceConnection.getInstance().bindService();
     }
@@ -100,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-        unbindService(MusicPlayerServiceConnection.getInstance());
+        getApplicationContext().unbindService(MusicPlayerServiceConnection.getInstance());
         MusicPlayerServiceConnection.getInstance().setMusicPlayerServiceConnection(null);
     }
 }
