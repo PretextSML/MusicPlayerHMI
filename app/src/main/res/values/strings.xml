@@ -8,4 +8,5 @@
     <string name="register">Register</string>
     <string name="get_music_list">Get music list</string>
     <string name="default_duration">0:00</string>
+    <string name="now_playing">Now playing: %1$s</string>
 </resources>

@@ -96,7 +96,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
 
             bundle = new Bundle();
             bundle.putSerializable("playMusic", info);
-            bundle.putBoolean("fromList", true);
+            bundle.putBoolean("fromList", false);
 
             message = new Message();
             message.what = 1;

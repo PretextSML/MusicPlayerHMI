@@ -1,14 +1,10 @@
 package com.pretext.musicplayerhmi.adapter;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,21 +21,12 @@ import java.util.List;
 
 public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
-    private final TextView currentMusic;
-    private final TextView totalDurationText;
-    private final ImageButton pauseAndResume;
-    private final SeekBar musicProgress;
     private final List<MusicInfo> musicInfoList;
     private final Context context;
 
-    public ProfileListAdapter(List<MusicInfo> musicInfoList, Context context, Activity activity) {
+    public ProfileListAdapter(List<MusicInfo> musicInfoList, Context context) {
         this.musicInfoList = musicInfoList;
         this.context = context;
-
-        totalDurationText = activity.findViewById(R.id.total_time);
-        currentMusic = activity.findViewById(R.id.current_music);
-        musicProgress = activity.findViewById(R.id.music_progress);
-        pauseAndResume = activity.findViewById(R.id.play_and_pause);
     }
 
     @NonNull

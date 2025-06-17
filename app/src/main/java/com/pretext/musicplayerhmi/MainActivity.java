@@ -21,7 +21,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -31,6 +30,8 @@ import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
+
+import java.util.Locale;
 
 @SuppressLint("StaticFieldLeak")
 public class MainActivity extends AppCompatActivity {
@@ -106,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
     private int maxVolume;
     private int currentVolume;
     private boolean isChangingVolume = false;
-    private Fragment lastFragment;
     private TextView currentDurationText;
 
     public static Context getContext() {
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             musicProgress.setProgress(0);
             pauseAndResume.setImageResource(R.drawable.play);
             totalDurationText.setText(R.string.default_duration);
-            currentMusic.setText("Now playing: None");
+            currentMusic.setText(String.format(getString(R.string.now_playing), "None"));
         });
     }
 
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         long duration = info.getMusicDuration();
         fromList = isFromList;
 
-        currentMusic.setText("Now playing: " + name);
+        currentMusic.setText(String.format(getString(R.string.now_playing), name));
         musicProgress.setMax((int) duration);
         totalDurationText.setText(String.format("%s:%s", (duration / 1000 / 60), (duration / 1000 % 60) / 10 > 0 ? (duration / 1000) % 60 : "0" + (duration / 1000) % 60));
         pauseAndResume.setImageResource(R.drawable.pause);
@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     volumeText.setText("");
                 } else {
-                    volumeText.setText(Integer.toString(seekBar.getProgress() * 100 / maxVolume));
+                    volumeText.setText(String.format(Locale.ENGLISH, "%d", seekBar.getProgress() * 100 / maxVolume));
                 }
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, AudioManager.FLAG_PLAY_SOUND);
             }
@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void initSeekBar() {
         Log.d(TAG, "initSeekBar: " + currentMusic);
-        
+
         currentDurationText = findViewById(R.id.current_time);
         totalDurationText = findViewById(R.id.total_time);
         currentMusic = findViewById(R.id.current_music);

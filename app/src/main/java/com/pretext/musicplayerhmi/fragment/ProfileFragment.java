@@ -26,11 +26,11 @@ import java.util.List;
 public class ProfileFragment extends Fragment {
     private static final String TAG = "[Profile]";
     private static ProfileFragment profileFragment;
-    private List<MusicInfo> playList = new ArrayList<>();
+
+    private final List<MusicInfo> playList = new ArrayList<>();
     private LinearLayout playAllBtn;
     private View rootView;
     private Handler handler;
-    private int currentMusicID = 0;
     private RecyclerView musicListView;
     private ProfileListAdapter profileListAdapter;
     private Message message;
@@ -48,7 +48,7 @@ public class ProfileFragment extends Fragment {
 
     public void initMusicList() {
         musicListView = rootView.findViewById(R.id.music_list);
-        profileListAdapter = new ProfileListAdapter(playList, getContext(), getActivity());
+        profileListAdapter = new ProfileListAdapter(playList, getContext());
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 1);
         Log.d(TAG, "initMusicList: " + profileListAdapter);
         musicListView.setAdapter(profileListAdapter);
@@ -70,7 +70,7 @@ public class ProfileFragment extends Fragment {
             Log.d(TAG, "playNext: " + true);
             new Handler(Looper.getMainLooper()).post(() -> {
                 playList.remove(0);
-                playMusic(playList.get(0), true);
+                playMusic(playList.get(0));
                 profileListAdapter.notifyItemRemoved(0);
             });
             return true;
@@ -96,21 +96,18 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         playAllBtn = view.findViewById(R.id.btn_play_all);
-        playAllBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "playList: " + playList.size());
-                if (!playList.isEmpty()) {
-                    playMusic(playList.get(0), true);
-                }
+        playAllBtn.setOnClickListener(v -> {
+            Log.d(TAG, "playList: " + playList.size());
+            if (!playList.isEmpty()) {
+                playMusic(playList.get(0));
             }
         });
     }
 
-    private void playMusic(MusicInfo info, boolean isFromList) {
+    private void playMusic(MusicInfo info) {
         bundle = new Bundle();
         bundle.putSerializable("playMusic", info);
-        bundle.putBoolean("fromList", isFromList);
+        bundle.putBoolean("fromList", true);
 
         message = new Message();
         message.what = 1;
