@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,6 +36,8 @@ public class ProfileFragment extends Fragment {
     private ProfileListAdapter profileListAdapter;
     private Message message;
     private Bundle bundle;
+    private int currentMusicID;
+    private boolean isPlaying = false;
 
     public static ProfileFragment getInstance() {
         if (profileFragment == null)
@@ -65,24 +68,38 @@ public class ProfileFragment extends Fragment {
     }
 
     public boolean playNext() {
+        reset(false);
         Log.d(TAG, "playNext: " + playList.size());
-        if (playList.size() > 1) {
+        if (currentMusicID < playList.size()) {
             Log.d(TAG, "playNext: " + true);
             new Handler(Looper.getMainLooper()).post(() -> {
-                playList.remove(0);
-                playMusic(playList.get(0));
-                profileListAdapter.notifyItemRemoved(0);
+                playMusic(playList.get(currentMusicID));
             });
             return true;
         } else {
-            Log.d(TAG, "playNext: " + false);
-            playList.clear();
-            new Handler(Looper.getMainLooper()).post(() -> profileListAdapter.notifyItemRemoved(0));
-            Log.d(TAG, "No music in list!");
+            reset(true);
             return false;
         }
     }
 
+    public void playNextMusic() {
+        if (currentMusicID < playList.size() && isPlaying) {
+            reset(false);
+            new Handler(Looper.getMainLooper()).post(() -> {
+                playMusic(playList.get(currentMusicID));
+            });
+        }
+    }
+
+    public void playPreviousMusic() {
+        if (currentMusicID - 2 >= 0 && isPlaying) {
+            reset(false);
+            new Handler(Looper.getMainLooper()).post(() -> {
+                currentMusicID -= 2;
+                playMusic(playList.get(currentMusicID));
+            });
+        }
+    }
 
     @Nullable
     @Override
@@ -99,12 +116,41 @@ public class ProfileFragment extends Fragment {
         playAllBtn.setOnClickListener(v -> {
             Log.d(TAG, "playList: " + playList.size());
             if (!playList.isEmpty()) {
-                playMusic(playList.get(0));
+                isPlaying = true;
+                playMusic(playList.get(currentMusicID));
             }
         });
     }
 
+    public void changeToPlay(int itemID) {
+        new Handler(Looper.getMainLooper()).post(() -> {
+            Log.d(TAG, "run: change to play");
+            View childView = musicListView.getChildAt(itemID);
+            ConstraintLayout layout = childView.findViewById(R.id.root_view);
+            layout.setBackgroundResource(R.drawable.bg_playing);
+        });
+    }
+
+    public void reset(boolean isForceStop) {
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (currentMusicID - 1 >= 0) {
+                Log.d(TAG, "run: reset to default " + (currentMusicID - 1));
+                View childView = musicListView.getChildAt(currentMusicID - 1);
+                ConstraintLayout layout = childView.findViewById(R.id.root_view);
+                layout.setBackgroundResource(R.drawable.button_bg);
+                if (isForceStop) {
+                    isPlaying = false;
+                    currentMusicID = 0;
+                }
+            }
+        });
+
+    }
+
     private void playMusic(MusicInfo info) {
+        changeToPlay(currentMusicID);
+        currentMusicID++;
+
         bundle = new Bundle();
         bundle.putSerializable("playMusic", info);
         bundle.putBoolean("fromList", true);

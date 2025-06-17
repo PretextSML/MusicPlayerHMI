@@ -99,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+    private ImageButton nextMusic;
+    private ImageButton previousMusic;
     private PopupWindow popupWindow;
     private ImageButton volume;
     private ImageButton stop;
@@ -123,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
             pauseAndResume.setImageResource(R.drawable.play);
             totalDurationText.setText(R.string.default_duration);
             currentMusic.setText(String.format(getString(R.string.now_playing), "None"));
+            ProfileFragment.getInstance().reset(true);
         });
     }
 
@@ -233,6 +236,11 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         });
+
+        nextMusic = findViewById(R.id.skip_next);
+        nextMusic.setOnClickListener(v -> ProfileFragment.getInstance().playNextMusic());
+        previousMusic = findViewById(R.id.skip_previous);
+        previousMusic.setOnClickListener(v -> ProfileFragment.getInstance().playPreviousMusic());
     }
 
     public void initVolume() {
