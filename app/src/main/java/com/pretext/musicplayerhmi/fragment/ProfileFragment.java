@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -125,9 +124,9 @@ public class ProfileFragment extends Fragment {
     public void changeToPlay(int itemID) {
         new Handler(Looper.getMainLooper()).post(() -> {
             Log.d(TAG, "run: change to play");
-            View childView = musicListView.getChildAt(itemID);
-            ConstraintLayout layout = childView.findViewById(R.id.root_view);
-            layout.setBackgroundResource(R.drawable.bg_playing);
+//            View childView = musicListView.getChildAt(itemID);
+//            ConstraintLayout layout = childView.findViewById(R.id.root_view);
+//            layout.setBackgroundResource(R.drawable.bg_playing);
         });
     }
 
@@ -135,9 +134,9 @@ public class ProfileFragment extends Fragment {
         new Handler(Looper.getMainLooper()).post(() -> {
             if (currentMusicID - 1 >= 0) {
                 Log.d(TAG, "run: reset to default " + (currentMusicID - 1));
-                View childView = musicListView.getChildAt(currentMusicID - 1);
-                ConstraintLayout layout = childView.findViewById(R.id.root_view);
-                layout.setBackgroundResource(R.drawable.button_bg);
+//                View childView = musicListView.getChildAt(currentMusicID - 1);
+//                ConstraintLayout layout = childView.findViewById(R.id.root_view);
+//                layout.setBackgroundResource(R.drawable.button_bg);
                 if (isForceStop) {
                     isPlaying = false;
                     currentMusicID = 0;

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
+import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerhmi.MusicInfo;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
@@ -41,27 +42,7 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
         MusicInfo info = musicInfoList.get(position);
 
-        byte[] data;
-        try {
-            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
-            metadataRetriever.setDataSource(info.getMusicPath());
-            data = metadataRetriever.getEmbeddedPicture();
-            metadataRetriever.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (data != null) {
-            Glide.with(context)
-                    .load(data)
-                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                    .into(holder.musicAlbum);
-        } else {
-            Glide.with(context)
-                    .load(R.drawable.album_default)
-                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                    .into(holder.musicAlbum);
-        }
+        setDefaultAlbumCover(holder);
 
         String[] split = info.getMusicName().split(" - ");
         String name = split[1].substring(0, split[1].length() - 4);
@@ -70,6 +51,47 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
         holder.musicName.setText(name);
         holder.musicAuthor.setText(author);
         holder.addToMusicList.setVisibility(View.GONE);
+        loadAlbumCoverAsync(holder, info);
+    }
+
+    private void setDefaultAlbumCover(MusicListViewHolder holder) {
+        Glide.with(context)
+                .load(R.drawable.album_default)
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                .into(holder.musicAlbum);
+    }
+
+    private void loadAlbumCoverAsync(MusicListViewHolder holder, MusicInfo info) {
+        final String currentPath = info.getMusicPath();
+
+        MainActivity.getExecutorService().execute(() -> {
+            byte[] data;
+            try {
+                MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+                metadataRetriever.setDataSource(currentPath);
+                data = metadataRetriever.getEmbeddedPicture();
+                metadataRetriever.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            final int currentPosition = holder.getAdapterPosition();
+            final byte[] finalData = data;
+
+            holder.itemView.post(() -> {
+                if (currentPosition != RecyclerView.NO_POSITION &&
+                        currentPosition < musicInfoList.size() &&
+                        currentPath.equals(musicInfoList.get(currentPosition).getMusicPath())) {
+
+                    if (finalData != null) {
+                        Glide.with(context)
+                                .load(finalData)
+                                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                                .into(holder.musicAlbum);
+                    }
+                }
+            });
+        });
     }
 
     @Override

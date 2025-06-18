@@ -32,10 +32,13 @@ import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressLint("StaticFieldLeak")
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "[MainActivity]";
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
     private static Context context;
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
@@ -110,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
     private int currentVolume;
     private boolean isChangingVolume = false;
     private TextView currentDurationText;
+
+    public static ExecutorService getExecutorService() {
+        return executorService;
+    }
 
     public static Context getContext() {
         return context;
