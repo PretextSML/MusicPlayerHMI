@@ -65,6 +65,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
         holder.addToMusicList.setOnClickListener(v -> {
             if (!ProfileFragment.getInstance().isInPlayList(info)) {
                 ProfileFragment.getInstance().addToPlayList(info);
+                holder.addToMusicList.setImageResource(R.drawable.playlist_add_check);
             } else {
                 Toast.makeText(v.getContext(), "Music already in music list", Toast.LENGTH_SHORT).show();
             }
@@ -76,6 +77,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
                 return;
             }
 
+            ProfileFragment.getInstance().reset(true);
             bundle = new Bundle();
             bundle.putSerializable("playMusic", info);
             bundle.putBoolean("fromList", false);
@@ -126,6 +128,11 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
                 }
             });
         });
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override

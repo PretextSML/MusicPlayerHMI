@@ -2,7 +2,6 @@ package com.pretext.musicplayerhmi.fragment;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.pretext.musicplayerhmi.MusicInfo;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.ProfileListAdapter;
+import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,12 +68,11 @@ public class ProfileFragment extends Fragment {
 
     public boolean playNext() {
         reset(false);
+        musicListView.smoothScrollToPosition(currentMusicID + 1 >= playList.size() ? playList.size() - 1 : currentMusicID + 1);
         Log.d(TAG, "playNext: " + playList.size());
         if (currentMusicID < playList.size()) {
             Log.d(TAG, "playNext: " + true);
-            new Handler(Looper.getMainLooper()).post(() -> {
-                playMusic(playList.get(currentMusicID));
-            });
+            playMusic(playList.get(currentMusicID));
             return true;
         } else {
             reset(true);
@@ -84,19 +83,17 @@ public class ProfileFragment extends Fragment {
     public void playNextMusic() {
         if (currentMusicID < playList.size() && isPlaying) {
             reset(false);
-            new Handler(Looper.getMainLooper()).post(() -> {
-                playMusic(playList.get(currentMusicID));
-            });
+            musicListView.smoothScrollToPosition(currentMusicID + 1 >= playList.size() ? playList.size() - 1 : currentMusicID + 1);
+            playMusic(playList.get(currentMusicID));
         }
     }
 
     public void playPreviousMusic() {
         if (currentMusicID - 2 >= 0 && isPlaying) {
             reset(false);
-            new Handler(Looper.getMainLooper()).post(() -> {
-                currentMusicID -= 2;
-                playMusic(playList.get(currentMusicID));
-            });
+            currentMusicID -= 2;
+            musicListView.smoothScrollToPosition(currentMusicID - 1 >= 0 ? currentMusicID - 1 : 0);
+            playMusic(playList.get(currentMusicID));
         }
     }
 
@@ -115,39 +112,29 @@ public class ProfileFragment extends Fragment {
         playAllBtn.setOnClickListener(v -> {
             Log.d(TAG, "playList: " + playList.size());
             if (!playList.isEmpty()) {
+                reset(true);
                 isPlaying = true;
                 playMusic(playList.get(currentMusicID));
             }
         });
     }
 
-    public void changeToPlay(int itemID) {
-        new Handler(Looper.getMainLooper()).post(() -> {
-            Log.d(TAG, "run: change to play");
-//            View childView = musicListView.getChildAt(itemID);
-//            ConstraintLayout layout = childView.findViewById(R.id.root_view);
-//            layout.setBackgroundResource(R.drawable.bg_playing);
-        });
-    }
 
     public void reset(boolean isForceStop) {
-        new Handler(Looper.getMainLooper()).post(() -> {
-            if (currentMusicID - 1 >= 0) {
-                Log.d(TAG, "run: reset to default " + (currentMusicID - 1));
-//                View childView = musicListView.getChildAt(currentMusicID - 1);
-//                ConstraintLayout layout = childView.findViewById(R.id.root_view);
-//                layout.setBackgroundResource(R.drawable.button_bg);
-                if (isForceStop) {
-                    isPlaying = false;
-                    currentMusicID = 0;
-                }
-            }
-        });
+        Log.d(TAG, "reset");
+        MusicListViewHolder viewHolder = profileListAdapter.getViewHolder(currentMusicID - 1 >= 0 ? currentMusicID - 1 : 0);
+        if (viewHolder != null)
+            viewHolder.rootView.setBackgroundResource(R.drawable.button_bg);
+        if (isForceStop) {
+            musicListView.smoothScrollToPosition(0);
+            isPlaying = false;
+            currentMusicID = 0;
+        }
 
     }
 
     private void playMusic(MusicInfo info) {
-        changeToPlay(currentMusicID);
+        profileListAdapter.getViewHolder(currentMusicID).rootView.setBackgroundResource(R.drawable.bg_playing);
         currentMusicID++;
 
         bundle = new Bundle();

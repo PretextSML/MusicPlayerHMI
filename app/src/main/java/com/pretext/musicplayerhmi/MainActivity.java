@@ -308,9 +308,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void initMenu() {
         TabLayout menu = findViewById(R.id.tab_layout);
-        menu.addTab(menu.newTab().setText("Profile"));
-        menu.addTab(menu.newTab().setText("Music List"));
-        menu.addTab(menu.newTab().setText("Local History"));
+        menu.addTab(menu.newTab().setText("Music list"));
+        menu.addTab(menu.newTab().setText("All music"));
+        menu.addTab(menu.newTab().setText("Local history"));
         menu.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {

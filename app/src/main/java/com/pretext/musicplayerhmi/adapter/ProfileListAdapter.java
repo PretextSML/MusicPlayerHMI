@@ -18,11 +18,15 @@ import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
+    private static final String TAG = "[profileListAdapter]";
     private final List<MusicInfo> musicInfoList;
+    private final Map<Integer, MusicListViewHolder> musicListViewHolderMap = new HashMap<>();
     private final Context context;
 
     public ProfileListAdapter(List<MusicInfo> musicInfoList, Context context) {
@@ -41,6 +45,7 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
     @Override
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
         MusicInfo info = musicInfoList.get(position);
+        musicListViewHolderMap.put(position, holder);
 
         setDefaultAlbumCover(holder);
 
@@ -53,6 +58,11 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
         holder.addToMusicList.setVisibility(View.GONE);
         loadAlbumCoverAsync(holder, info);
     }
+
+    public MusicListViewHolder getViewHolder(int position) {
+        return musicListViewHolderMap.get(position);
+    }
+
 
     private void setDefaultAlbumCover(MusicListViewHolder holder) {
         Glide.with(context)
@@ -92,6 +102,11 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
                 }
             });
         });
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override
