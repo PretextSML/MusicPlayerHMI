@@ -17,7 +17,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.pretext.musicplayerhmi.MainActivity;
-import com.pretext.musicplayerhmi.MusicInfo;
+import com.pretext.musicplayerhmi.MusicInfoUtil;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
@@ -28,14 +28,14 @@ import java.util.List;
 
 public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
-    private final List<MusicInfo> musicInfoList;
+    private final List<MusicInfoUtil> musicInfoUtilList;
     private final Context context;
     private final Handler handler;
     private Bundle bundle;
     private Message message;
 
-    public MusicListAdapter(List<MusicInfo> musicInfoList, Context context, Handler handler) {
-        this.musicInfoList = musicInfoList;
+    public MusicListAdapter(List<MusicInfoUtil> musicInfoUtilList, Context context, Handler handler) {
+        this.musicInfoUtilList = musicInfoUtilList;
         this.context = context;
         this.handler = handler;
     }
@@ -50,7 +50,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
-        MusicInfo info = musicInfoList.get(position);
+        MusicInfoUtil info = musicInfoUtilList.get(position);
 
         setDefaultAlbumCover(holder);
 
@@ -97,7 +97,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
                 .into(holder.musicAlbum);
     }
 
-    private void loadAlbumCoverAsync(MusicListViewHolder holder, MusicInfo info) {
+    private void loadAlbumCoverAsync(MusicListViewHolder holder, MusicInfoUtil info) {
         final String currentPath = info.getMusicPath();
 
         MainActivity.getExecutorService().execute(() -> {
@@ -116,8 +116,8 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
 
             holder.itemView.post(() -> {
                 if (currentPosition != RecyclerView.NO_POSITION &&
-                        currentPosition < musicInfoList.size() &&
-                        currentPath.equals(musicInfoList.get(currentPosition).getMusicPath())) {
+                        currentPosition < musicInfoUtilList.size() &&
+                        currentPath.equals(musicInfoUtilList.get(currentPosition).getMusicPath())) {
 
                     if (finalData != null) {
                         Glide.with(context)
@@ -137,6 +137,6 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
 
     @Override
     public int getItemCount() {
-        return musicInfoList.size();
+        return musicInfoUtilList.size();
     }
 }

@@ -8,7 +8,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerservice.IMusicPlayerInterface;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
@@ -18,6 +17,7 @@ public class MusicPlayerServiceConnection implements ServiceConnection {
     private IMusicPlayerInterface iMusicPlayerInterface;
     private IMusicProgressCallback musicProgressCallback;
     private Boolean isConnected;
+    private IBinder iBinder;
 
     public static MusicPlayerServiceConnection getInstance() {
         if (musicPlayerServiceConnection == null)
@@ -43,24 +43,32 @@ public class MusicPlayerServiceConnection implements ServiceConnection {
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected");
+        iBinder = service;
+        iMusicPlayerInterface = IMusicPlayerInterface.Stub.asInterface(iBinder);
         try {
-            Log.d(TAG, "onServiceConnected");
-            iMusicPlayerInterface = IMusicPlayerInterface.Stub.asInterface(service);
+            iMusicPlayerInterface.setDBHelper();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void activateService() {
+        try {
             iMusicPlayerInterface.registerCallback(musicProgressCallback);
             iMusicPlayerInterface.startTimer();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    public void bindService() {
+    public void bindService(Context context) {
         Intent musicPlayerIntent = new Intent();
 
         musicPlayerIntent.setPackage("com.pretext.musicplayerservice");
         musicPlayerIntent.setAction("com.pretext.musicplayerservice.MusicPlayerService");
 
-        isConnected = MainActivity.getContext().bindService(musicPlayerIntent, musicPlayerServiceConnection, Context.BIND_AUTO_CREATE);
+        isConnected = context.bindService(musicPlayerIntent, musicPlayerServiceConnection, Context.BIND_AUTO_CREATE);
         Log.d(TAG, "bindService: " + isConnected);
     }
 

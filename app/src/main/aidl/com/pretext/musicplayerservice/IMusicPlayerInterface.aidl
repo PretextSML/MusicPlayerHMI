@@ -21,4 +21,11 @@ interface IMusicPlayerInterface {
     void registerCallback(IMusicProgressCallback callback);
     void unregisterCallback(IMusicProgressCallback callback);
 
+    void setHistory(String user, String history);
+    void setDBHelper();
+
+    boolean addNewUser(String user, String password);
+    boolean authenticatedUser(String user, String password);
+
+    String getHistory(String user);
 }

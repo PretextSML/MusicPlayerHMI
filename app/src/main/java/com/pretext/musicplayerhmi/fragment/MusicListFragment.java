@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pretext.musicplayerhmi.MusicInfo;
+import com.pretext.musicplayerhmi.MusicInfoUtil;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.MusicListAdapter;
 
@@ -27,7 +27,7 @@ public class MusicListFragment extends Fragment {
 
     private static final String TAG = "[MusicListFragment]";
     private static MusicListFragment musicListFragment;
-    private List<MusicInfo> musicInfoList;
+    private List<MusicInfoUtil> musicInfoUtilList;
     private View rootView;
     private Handler handler;
     private Context context;
@@ -47,7 +47,7 @@ public class MusicListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-        musicInfoList = readMusicFile();
+        musicInfoUtilList = readMusicFile();
     }
 
     @Nullable
@@ -60,15 +60,15 @@ public class MusicListFragment extends Fragment {
 
     public void initMusicList() {
         RecyclerView musicListView = rootView.findViewById(R.id.music_list);
-        MusicListAdapter musicListAdapter = new MusicListAdapter(musicInfoList, context, handler);
+        MusicListAdapter musicListAdapter = new MusicListAdapter(musicInfoUtilList, context, handler);
         GridLayoutManager layoutManager = new GridLayoutManager(context, 1);
         Log.d(TAG, "initMusicList: " + musicListAdapter);
         musicListView.setAdapter(musicListAdapter);
         musicListView.setLayoutManager(layoutManager);
     }
 
-    public List<MusicInfo> readMusicFile() {
-        List<MusicInfo> musicInfoList = new ArrayList<>();
+    public List<MusicInfoUtil> readMusicFile() {
+        List<MusicInfoUtil> musicInfoUtilList = new ArrayList<>();
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 null,
@@ -79,8 +79,8 @@ public class MusicListFragment extends Fragment {
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                musicInfoList.add(
-                        new MusicInfo(
+                musicInfoUtilList.add(
+                        new MusicInfoUtil(
                                 cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)),
                                 cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)),
                                 cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
@@ -92,6 +92,6 @@ public class MusicListFragment extends Fragment {
             Log.d(TAG, "cursor is null!");
         }
 
-        return musicInfoList;
+        return musicInfoUtilList;
     }
 }

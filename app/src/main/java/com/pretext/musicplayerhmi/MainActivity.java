@@ -94,10 +94,10 @@ public class MainActivity extends AppCompatActivity {
             super.handleMessage(msg);
             if (msg.what == 1) {
                 Log.d(TAG, "handleMessage: get message from profile fragment");
-                MusicInfo musicInfo = msg.getData().getSerializable("playMusic", MusicInfo.class);
+                MusicInfoUtil musicInfoUtil = msg.getData().getSerializable("playMusic", MusicInfoUtil.class);
                 boolean isFromList = msg.getData().getBoolean("fromList");
-                if (musicInfo != null) {
-                    playMusic(musicInfo, isFromList);
+                if (musicInfoUtil != null) {
+                    playMusic(musicInfoUtil, isFromList);
                 }
             }
         }
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void playMusic(MusicInfo info, boolean isFromList) {
+    public void playMusic(MusicInfoUtil info, boolean isFromList) {
         stopMusic = false;
         Log.d(TAG, "playMusic: " + info.getMusicName());
         String[] split = info.getMusicName().split(" - ");
@@ -374,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
         initFragment();
         resetToDefault();
         MusicPlayerServiceConnection.getInstance().setMusicProgressCallback(callback);
-        MusicPlayerServiceConnection.getInstance().bindService();
+        MusicPlayerServiceConnection.getInstance().activateService();
     }
 
     @Override
@@ -386,7 +386,5 @@ public class MainActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-        getApplicationContext().unbindService(MusicPlayerServiceConnection.getInstance());
-        MusicPlayerServiceConnection.getInstance().setMusicPlayerServiceConnection(null);
     }
 }

@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pretext.musicplayerhmi.MusicInfo;
+import com.pretext.musicplayerhmi.MusicInfoUtil;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.ProfileListAdapter;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
@@ -27,7 +27,7 @@ public class ProfileFragment extends Fragment {
     private static final String TAG = "[Profile]";
     private static ProfileFragment profileFragment;
 
-    private final List<MusicInfo> playList = new ArrayList<>();
+    private final List<MusicInfoUtil> playList = new ArrayList<>();
     private LinearLayout playAllBtn;
     private View rootView;
     private Handler handler;
@@ -57,11 +57,11 @@ public class ProfileFragment extends Fragment {
         musicListView.setLayoutManager(layoutManager);
     }
 
-    public boolean isInPlayList(MusicInfo info) {
+    public boolean isInPlayList(MusicInfoUtil info) {
         return playList.contains(info);
     }
 
-    public void addToPlayList(MusicInfo music) {
+    public void addToPlayList(MusicInfoUtil music) {
         playList.add(music);
         profileListAdapter.notifyItemInserted(playList.size());
     }
@@ -92,7 +92,7 @@ public class ProfileFragment extends Fragment {
         if (currentMusicID - 2 >= 0 && isPlaying) {
             reset(false);
             currentMusicID -= 2;
-            musicListView.smoothScrollToPosition(currentMusicID - 1 >= 0 ? currentMusicID - 1 : 0);
+            musicListView.smoothScrollToPosition(Math.max(currentMusicID - 1, 0));
             playMusic(playList.get(currentMusicID));
         }
     }
@@ -122,7 +122,7 @@ public class ProfileFragment extends Fragment {
 
     public void reset(boolean isForceStop) {
         Log.d(TAG, "reset");
-        MusicListViewHolder viewHolder = profileListAdapter.getViewHolder(currentMusicID - 1 >= 0 ? currentMusicID - 1 : 0);
+        MusicListViewHolder viewHolder = profileListAdapter.getViewHolder(Math.max(currentMusicID - 1, 0));
         if (viewHolder != null)
             viewHolder.rootView.setBackgroundResource(R.drawable.button_bg);
         if (isForceStop) {
@@ -133,7 +133,7 @@ public class ProfileFragment extends Fragment {
 
     }
 
-    private void playMusic(MusicInfo info) {
+    private void playMusic(MusicInfoUtil info) {
         profileListAdapter.getViewHolder(currentMusicID).rootView.setBackgroundResource(R.drawable.bg_playing);
         currentMusicID++;
 
