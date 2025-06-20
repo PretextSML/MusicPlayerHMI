@@ -153,7 +153,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().playMusic(path);
-            HistoryFragment.getInstance().addHistoryList(name);
+            if (!LoginActivity.currentUser.equals("GUEST"))
+                HistoryFragment.getInstance().addHistoryList(name);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
