@@ -1,4 +1,4 @@
-package com.pretext.musicplayerhmi;
+package com.pretext.musicplayerhmi.util;
 
 import java.io.Serializable;
 

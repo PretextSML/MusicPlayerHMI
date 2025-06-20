@@ -16,9 +16,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pretext.musicplayerhmi.MusicInfoUtil;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.MusicListAdapter;
+import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 
 import java.util.ArrayList;
 import java.util.List;

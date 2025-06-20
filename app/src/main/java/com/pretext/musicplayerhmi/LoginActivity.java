@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 
 public class LoginActivity extends Activity {
+    public static String currentUser = null;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +33,7 @@ public class LoginActivity extends Activity {
                 try {
                     boolean isCorrect = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().authenticatedUser(user, password);
                     if (isCorrect) {
+                        currentUser = user;
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     } else {
                         Toast.makeText(getApplicationContext(), "Username or Password error!", Toast.LENGTH_SHORT).show();
@@ -59,7 +62,10 @@ public class LoginActivity extends Activity {
                 }
             }
         });
-        findViewById(R.id.login_as_tourist).setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, MainActivity.class)));
+        findViewById(R.id.login_as_tourist).setOnClickListener(v -> {
+            currentUser = "GUEST";
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        });
     }
 
     @Override

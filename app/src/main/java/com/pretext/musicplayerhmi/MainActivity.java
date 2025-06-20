@@ -29,6 +29,7 @@ import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
+import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 import java.util.Locale;
@@ -152,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().playMusic(path);
+            HistoryFragment.getInstance().addHistoryList(name);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -379,12 +381,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         try {
-            MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopMusic();
             MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopTimer();
+            MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopMusic();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
+        super.onDestroy();
     }
 }
