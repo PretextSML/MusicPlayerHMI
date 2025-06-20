@@ -17,10 +17,6 @@ public class HistoryUtil {
             return historyList.size() + " : " + song;
         }
 
-        if (historyList.size() > 50) {
-            historyList.remove(0);
-        }
-
         return null;
     }
 

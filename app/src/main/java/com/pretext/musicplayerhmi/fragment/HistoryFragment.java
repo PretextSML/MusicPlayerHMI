@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,6 +51,8 @@ public class HistoryFragment extends Fragment {
     }
 
     public void initHistoryList() {
+        TextView title = rootView.findViewById(R.id.history_title);
+        title.setText(String.format(getResources().getString(R.string.history_title), LoginActivity.currentUser));
         try {
             String history = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().getHistory(LoginActivity.currentUser);
             if (history != null) {
