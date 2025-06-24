@@ -25,6 +25,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.tabs.TabLayout;
+import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().playMusic(path);
-            if (!LoginActivity.currentUser.equals("GUEST"))
+            if (!((MusicPlayerApplication) getApplication()).getCurrentUser().equals("GUEST"))
                 HistoryFragment.getInstance().addHistoryList(name);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
@@ -367,7 +368,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         context = getApplicationContext();
-
+        String user = ((MusicPlayerApplication) getApplication()).getCurrentUser();
+        Log.d(TAG, "current user: " + user);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initSeekBar();

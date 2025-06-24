@@ -30,10 +30,10 @@
                 android:background="@drawable/bg_input"
                 android:inputType="text"
                 android:padding="5dp"
+                android:text="@={loginViewModel.user.account}"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:typeface="sans"
-                android:text="@={loginViewModel.user.account}"
                 app:layout_constraintBottom_toBottomOf="@id/user_name_image"
                 app:layout_constraintLeft_toRightOf="@id/user_name_image"
                 app:layout_constraintRight_toRightOf="parent"
@@ -48,9 +48,9 @@
                 android:background="@drawable/bg_input"
                 android:inputType="textPassword"
                 android:padding="5dp"
+                android:text="@={loginViewModel.user.password}"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:text="@={loginViewModel.user.password}"
                 android:typeface="sans"
                 app:layout_constraintBottom_toBottomOf="@id/user_password_image"
                 app:layout_constraintLeft_toRightOf="@id/user_password_image"
@@ -84,6 +84,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_login_btn"
+                android:enabled="@{!loginViewModel.isLoading}"
+                android:onClick="@{() -> loginViewModel.authenticateUser(loginViewModel.user.account, loginViewModel.user.password)}"
                 android:text="Login"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -98,6 +100,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_login_btn"
+                android:enabled="@{!loginViewModel.isLoading}"
+                android:onClick="@{() -> loginViewModel.registerUser(loginViewModel.user.account, loginViewModel.user.password)}"
                 android:text="Register"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -114,6 +118,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_login_btn"
+                android:enabled="@{!loginViewModel.isLoading}"
                 android:text="Login as tourist"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -125,27 +130,27 @@
 
             <TextView
                 android:id="@+id/tv_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
+                android:text="@{loginViewModel.user.account}"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:text="@{loginViewModel.user.account}"
-                app:layout_constraintTop_toBottomOf="@id/login_as_tourist"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                app:layout_constraintTop_toBottomOf="@id/login_as_tourist" />
 
             <TextView
                 android:id="@+id/tv_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
+                android:text="@{loginViewModel.user.password}"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                android:text="@{loginViewModel.user.password}"
-                app:layout_constraintTop_toBottomOf="@id/tv_account"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                app:layout_constraintTop_toBottomOf="@id/tv_account" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

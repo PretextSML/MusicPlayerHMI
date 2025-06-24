@@ -1,34 +1,31 @@
 package com.pretext.musicplayerhmi.fragment;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.MusicListAdapter;
-import com.pretext.musicplayerhmi.util.MusicInfoUtil;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.pretext.musicplayerhmi.databinding.FragmentMusicListBinding;
+import com.pretext.musicplayerhmi.viewmodels.MusicListViewModel;
 
 public class MusicListFragment extends Fragment {
 
+    MusicListViewModel musicListViewModel;
+    FragmentMusicListBinding musicListBinding;
+
     private static final String TAG = "[MusicListFragment]";
     private static MusicListFragment musicListFragment;
-    private List<MusicInfoUtil> musicInfoUtilList;
-    private View rootView;
     private Handler handler;
     private Context context;
 
@@ -47,51 +44,39 @@ public class MusicListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-        musicInfoUtilList = readMusicFile();
+        musicListViewModel = new ViewModelProvider(this).get(MusicListViewModel.class);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_music_list, container, false);
-        initMusicList();
-        return rootView;
+        musicListBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false);
+        musicListBinding.setLifecycleOwner(getViewLifecycleOwner());
+
+        return musicListBinding.getRoot();
     }
 
-    public void initMusicList() {
-        RecyclerView musicListView = rootView.findViewById(R.id.music_list);
-        MusicListAdapter musicListAdapter = new MusicListAdapter(musicInfoUtilList, context, handler);
+    public void initRecyclerView() {
         GridLayoutManager layoutManager = new GridLayoutManager(context, 1);
-        Log.d(TAG, "initMusicList: " + musicListAdapter);
-        musicListView.setAdapter(musicListAdapter);
-        musicListView.setLayoutManager(layoutManager);
+        musicListBinding.musicList.setLayoutManager(layoutManager);
     }
 
-    public List<MusicInfoUtil> readMusicFile() {
-        List<MusicInfoUtil> musicInfoUtilList = new ArrayList<>();
-        Cursor cursor = context.getContentResolver().query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                null,
-                null,
-                null,
-                null
-        );
-
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                musicInfoUtilList.add(
-                        new MusicInfoUtil(
-                                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)),
-                                cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)),
-                                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-                        )
-                );
+    public void initObserveViewModel() {
+        musicListViewModel.getMusicList().observe(getViewLifecycleOwner(), musicList -> {
+            if (musicList != null && !musicList.isEmpty()) {
+                MusicListAdapter adapter = new MusicListAdapter(musicList, context, handler);
+                musicListBinding.musicList.setAdapter(adapter);
             }
-            cursor.close();
-        } else {
-            Log.d(TAG, "cursor is null!");
-        }
+        });
+    }
 
-        return musicInfoUtilList;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        initRecyclerView();
+        initObserveViewModel();
+
+        musicListViewModel.loadMusicFiles();
     }
 }

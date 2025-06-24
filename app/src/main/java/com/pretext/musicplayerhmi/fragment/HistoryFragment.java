@@ -14,9 +14,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pretext.musicplayerhmi.LoginActivity;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.adapter.HistoryAdapter;
+import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.util.HistoryUtil;
 
@@ -43,7 +43,7 @@ public class HistoryFragment extends Fragment {
             historyList.add(addedName);
             historyAdapter.notifyItemInserted(historyList.size());
             try {
-                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setHistory(LoginActivity.currentUser, userHistory.toJson());
+                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setHistory(((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser(), userHistory.toJson());
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
@@ -52,9 +52,9 @@ public class HistoryFragment extends Fragment {
 
     public void initHistoryList() {
         TextView title = rootView.findViewById(R.id.history_title);
-        title.setText(String.format(getResources().getString(R.string.history_title), LoginActivity.currentUser));
+        title.setText(String.format(getResources().getString(R.string.history_title), ((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser()));
         try {
-            String history = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().getHistory(LoginActivity.currentUser);
+            String history = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().getHistory(((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser());
             if (history != null) {
                 if (userHistory.fromGson(history) != null) {
                     userHistory = userHistory.fromGson(history);
@@ -81,7 +81,7 @@ public class HistoryFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_history, container, false);
-        if (!LoginActivity.currentUser.equals("GUEST"))
+        if (!((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser().equals("GUEST"))
             initHistoryList();
         else {
             rootView.findViewById(R.id.user).setVisibility(View.GONE);
