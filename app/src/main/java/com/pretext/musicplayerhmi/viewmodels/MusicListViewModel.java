@@ -52,9 +52,4 @@ public class MusicListViewModel extends AndroidViewModel {
             }
         });
     }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-    }
 }

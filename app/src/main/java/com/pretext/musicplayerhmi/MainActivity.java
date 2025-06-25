@@ -21,16 +21,20 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.tabs.TabLayout;
 import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
+import com.pretext.musicplayerhmi.databinding.ActivityMainBinding;
 import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
+import com.pretext.musicplayerhmi.viewmodels.MusicPlayerViewModel;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 import java.util.Locale;
@@ -44,7 +48,37 @@ public class MainActivity extends AppCompatActivity {
     private static Context context;
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
-    private Boolean isChanging = false;
+    MusicPlayerViewModel musicPlayerViewModel;
+    ActivityMainBinding activityMainBinding;
+    private final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
+        @Override
+        public void onProgressChanged(long currentDuration) {
+            runOnUiThread(() -> {
+                activityMainBinding.currentTime.setText(formatTime((int) currentDuration));
+                activityMainBinding.musicProgress.setProgress((int) currentDuration);
+            });
+        }
+
+        @Override
+        public void onPlayStatusChanged(boolean currentStatus) {
+            runOnUiThread(() -> {
+                if (currentStatus)
+                    activityMainBinding.playAndPause.setImageResource(R.drawable.pause);
+                else
+                    activityMainBinding.playAndPause.setImageResource(R.drawable.play);
+                musicPlayerViewModel.getIsPlaying().setValue(currentStatus);
+                musicPlayerViewModel.getIsPaused().setValue(!currentStatus);
+            });
+        }
+
+        @Override
+        public void onFinishPlaying() {
+            runOnUiThread(() -> {
+                activityMainBinding.totalTime.setText(formatTime(0));
+                musicPlayerViewModel.stopMusic();
+            });
+        }
+    };
     private Boolean mIsPlayed = false;
     private SeekBar musicProgress;
     private ImageButton pauseAndResume;
@@ -53,43 +87,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView totalDurationText;
     private boolean fromList = false;
     private boolean stopMusic = false;
-    private final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
-        @Override
-        public void onProgressChanged(long currentDuration) {
-            if (!isChanging && musicProgress != null) {
-                musicProgress.setProgress((int) currentDuration);
-            }
-        }
-
-        @Override
-        public void onPlayStatusChanged(boolean currentStatus) {
-            if (pauseAndResume != null) {
-                if (currentStatus) {
-                    pauseAndResume.setImageResource(R.drawable.pause);
-                    mIsPlayed = true;
-                } else {
-                    pauseAndResume.setImageResource(R.drawable.play);
-                    mIsPlayed = false;
-                }
-            }
-        }
-
-        @Override
-        public void onFinishPlaying() {
-            Log.d(TAG, "onFinishPlaying");
-            if (fromList) {
-                if (!stopMusic) {
-                    if (!ProfileFragment.getInstance().playNext()) {
-                        resetToDefault();
-                    }
-                } else {
-                    resetToDefault();
-                }
-            } else {
-                resetToDefault();
-            }
-        }
-    };
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -120,8 +117,11 @@ public class MainActivity extends AppCompatActivity {
         return executorService;
     }
 
-    public static Context getContext() {
-        return context;
+    private String formatTime(int time) {
+        int seconds = time / 1000;
+        int minutes = seconds / 60;
+        seconds %= 60;
+        return String.format("%d:%02d", minutes, seconds);
     }
 
     public void resetToDefault() {
@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
             musicProgress.setProgress(0);
             pauseAndResume.setImageResource(R.drawable.play);
             totalDurationText.setText(R.string.default_duration);
-            currentMusic.setText(String.format(getString(R.string.now_playing), "None"));
             ProfileFragment.getInstance().reset(true);
         });
     }
@@ -143,17 +142,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "playMusic: " + info.getMusicName());
         String[] split = info.getMusicName().split(" - ");
         String name = split[1].substring(0, split[1].length() - 4);
-        String path = info.getMusicPath();
-        long duration = info.getMusicDuration();
         fromList = isFromList;
 
-        currentMusic.setText(String.format(getString(R.string.now_playing), name));
-        musicProgress.setMax((int) duration);
-        totalDurationText.setText(String.format("%s:%s", (duration / 1000 / 60), (duration / 1000 % 60) / 10 > 0 ? (duration / 1000) % 60 : "0" + (duration / 1000) % 60));
-        pauseAndResume.setImageResource(R.drawable.pause);
+        musicPlayerViewModel.getMaxProgress().setValue((int) info.getMusicDuration());
+        activityMainBinding.totalTime.setText(formatTime((int) info.getMusicDuration()));
 
         try {
-            MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().playMusic(path);
+            musicPlayerViewModel.playMusic(info, isFromList);
             if (!((MusicPlayerApplication) getApplication()).getCurrentUser().equals("GUEST"))
                 HistoryFragment.getInstance().addHistoryList(name);
         } catch (RemoteException e) {
@@ -220,33 +215,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void initButton() {
         pauseAndResume = findViewById(R.id.play_and_pause);
-        pauseAndResume.setOnClickListener(v -> {
-            if (mIsPlayed) {
-                try {
-                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().pauseMusic();
-                    mIsPause = true;
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (mIsPause) {
-                try {
-                    MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().resumeMusic();
-                    mIsPause = false;
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
         stop = findViewById(R.id.stop_music);
-        stop.setOnClickListener(v -> {
-            try {
-                stopMusic = true;
-                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopMusic();
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
-        });
+
+        activityMainBinding.playAndPause.setOnClickListener(v -> musicPlayerViewModel.switchPlayAndPause());
+        activityMainBinding.stopMusic.setOnClickListener(v -> musicPlayerViewModel.stopMusic());
 
         nextMusic = findViewById(R.id.skip_next);
         nextMusic.setOnClickListener(v -> ProfileFragment.getInstance().playNextMusic());
@@ -279,17 +251,18 @@ public class MainActivity extends AppCompatActivity {
         totalDurationText = findViewById(R.id.total_time);
         currentMusic = findViewById(R.id.current_music);
         musicProgress = findViewById(R.id.music_progress);
-        musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        activityMainBinding.musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                currentDurationText.setText(String.format("%s:%s", (progress / 1000 / 60), (progress / 1000 % 60) / 10 > 0 ? (progress / 1000) % 60 : "0" + (progress / 1000) % 60));
+                if (fromUser) {
+                    activityMainBinding.currentTime.setText(formatTime(progress));
+                }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 try {
                     MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().stopTimer();
-                    isChanging = true;
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
@@ -297,11 +270,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                musicPlayerViewModel.seekTo(seekBar.getProgress());
                 try {
-                    if (mIsPlayed || mIsPause) {
-                        MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setDuration(seekBar.getProgress());
-                    }
-                    isChanging = false;
                     MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().startTimer();
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
@@ -372,6 +342,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "current user: " + user);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        musicPlayerViewModel = new ViewModelProvider(this).get(MusicPlayerViewModel.class);
+        activityMainBinding.setMusicPlayerViewModel(musicPlayerViewModel);
+        activityMainBinding.setLifecycleOwner(this);
+
         initSeekBar();
         initButton();
         initVolume();
