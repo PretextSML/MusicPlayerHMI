@@ -1,10 +1,8 @@
 package com.pretext.musicplayerhmi;
 
 import android.annotation.SuppressLint;
-import android.app.Service;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,7 +11,6 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
@@ -30,14 +27,15 @@ import com.google.android.material.tabs.TabLayout;
 import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.databinding.ActivityMainBinding;
+import com.pretext.musicplayerhmi.databinding.VolumePopupBinding;
 import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 import com.pretext.musicplayerhmi.viewmodels.MusicPlayerViewModel;
+import com.pretext.musicplayerhmi.viewmodels.VolumeViewModel;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
     MusicPlayerViewModel musicPlayerViewModel;
+    VolumeViewModel volumeViewModel;
     ActivityMainBinding activityMainBinding;
     private final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
         @Override
@@ -79,14 +78,6 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     };
-    private Boolean mIsPlayed = false;
-    private SeekBar musicProgress;
-    private ImageButton pauseAndResume;
-    private Boolean mIsPause = false;
-    private TextView currentMusic;
-    private TextView totalDurationText;
-    private boolean fromList = false;
-    private boolean stopMusic = false;
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -101,17 +92,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+    VolumePopupBinding volumePopupBinding;
+    private SeekBar musicProgress;
+    private ImageButton pauseAndResume;
+    private TextView currentMusic;
+    private TextView totalDurationText;
     private ImageButton nextMusic;
     private ImageButton previousMusic;
     private PopupWindow popupWindow;
-    private ImageButton volume;
-    private ImageButton stop;
-    private AudioManager audioManager;
-    private TextView volumeText;
     private int maxVolume;
     private int currentVolume;
-    private boolean isChangingVolume = false;
-    private TextView currentDurationText;
 
     public static ExecutorService getExecutorService() {
         return executorService;
@@ -127,10 +117,8 @@ public class MainActivity extends AppCompatActivity {
     public void resetToDefault() {
         new Handler(Looper.getMainLooper()).post(() -> {
             Log.d(TAG, "stopPlaying");
-            mIsPlayed = false;
-            mIsPause = false;
-            musicProgress.setMax(0);
-            musicProgress.setProgress(0);
+            activityMainBinding.musicProgress.setMax(0);
+            activityMainBinding.musicProgress.setProgress(0);
             pauseAndResume.setImageResource(R.drawable.play);
             totalDurationText.setText(R.string.default_duration);
             ProfileFragment.getInstance().reset(true);
@@ -138,11 +126,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playMusic(MusicInfoUtil info, boolean isFromList) {
-        stopMusic = false;
         Log.d(TAG, "playMusic: " + info.getMusicName());
         String[] split = info.getMusicName().split(" - ");
         String name = split[1].substring(0, split[1].length() - 4);
-        fromList = isFromList;
 
         musicPlayerViewModel.getMaxProgress().setValue((int) info.getMusicDuration());
         activityMainBinding.totalTime.setText(formatTime((int) info.getMusicDuration()));
@@ -156,66 +142,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void initPopupWindow(View v) {
-        View view = LayoutInflater.from(context).inflate(R.layout.volume_popup, null, false);
-        SeekBar volumeSetting = view.findViewById(R.id.volume_setting);
-        audioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
-        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        Log.d(TAG, "initPopupWindow: max = " + maxVolume + ", now = " + currentVolume);
-        volumeSetting.setMax(maxVolume);
-        volumeSetting.setProgress(currentVolume);
-        volumeSetting.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+    public void initPopupWindow() {
+        volumeViewModel = new ViewModelProvider(this).get(VolumeViewModel.class);
+        volumePopupBinding = VolumePopupBinding.inflate(LayoutInflater.from(this), null, false);
+        volumePopupBinding.setVolumeViewModel(volumeViewModel);
+        volumePopupBinding.setLifecycleOwner(this);
+        volumePopupBinding.volumeSetting.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (!isChangingVolume) {
-                    if (progress * 100 / maxVolume >= 50) {
-                        volume.setImageResource(R.drawable.volume_loud);
-                    } else if (progress * 100 / maxVolume > 0) {
-                        volume.setImageResource(R.drawable.volume_medium);
-                    } else if (progress == 0) {
-                        volume.setImageResource(R.drawable.volume_mute);
-                    }
-                    volumeText.setText("");
-                } else {
-                    volumeText.setText(String.format(Locale.ENGLISH, "%d", seekBar.getProgress() * 100 / maxVolume));
-                }
-                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, AudioManager.FLAG_PLAY_SOUND);
+                volumeViewModel.setVolumeLevel(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                isChangingVolume = true;
-                volume.setImageResource(R.drawable.no_volume);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                isChangingVolume = false;
-                if (seekBar.getProgress() * 100 / maxVolume >= 50) {
-                    volume.setImageResource(R.drawable.volume_loud);
-                } else if (seekBar.getProgress() * 100 / maxVolume > 0) {
-                    volume.setImageResource(R.drawable.volume_medium);
-                } else if (seekBar.getProgress() == 0) {
-                    volume.setImageResource(R.drawable.volume_mute);
-                }
-                volumeText.setText("");
             }
         });
+
         popupWindow = new PopupWindow(
-                view,
+                volumePopupBinding.getRoot(),
                 Math.round(getResources().getDisplayMetrics().density * 25),
                 Math.round(getResources().getDisplayMetrics().density * 150),
                 true
         );
         popupWindow.setTouchable(true);
-        popupWindow.setTouchInterceptor((v1, event) -> false);
         popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
-        popupWindow.showAsDropDown(v, Gravity.CENTER, Gravity.CENTER, 0);
+        popupWindow.showAsDropDown(activityMainBinding.volume, Gravity.CENTER, Gravity.CENTER, 0);
     }
 
     public void initButton() {
         pauseAndResume = findViewById(R.id.play_and_pause);
-        stop = findViewById(R.id.stop_music);
 
         activityMainBinding.playAndPause.setOnClickListener(v -> musicPlayerViewModel.switchPlayAndPause());
         activityMainBinding.stopMusic.setOnClickListener(v -> musicPlayerViewModel.stopMusic());
@@ -227,30 +186,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initVolume() {
-        audioManager = (AudioManager) context.getSystemService(Service.AUDIO_SERVICE);
-        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-
-        volume = findViewById(R.id.volume);
-        volume.setOnClickListener(this::initPopupWindow);
-        volumeText = findViewById(R.id.volume_text);
-
-        if (currentVolume * 100 / maxVolume >= 50) {
-            volume.setImageResource(R.drawable.volume_loud);
-        } else if (currentVolume * 100 / maxVolume > 0) {
-            volume.setImageResource(R.drawable.volume_medium);
-        } else if (currentVolume == 0) {
-            volume.setImageResource(R.drawable.volume_mute);
-        }
+        activityMainBinding.volume.setOnClickListener(v -> initPopupWindow());
     }
 
     public void initSeekBar() {
         Log.d(TAG, "initSeekBar: " + currentMusic);
 
-        currentDurationText = findViewById(R.id.current_time);
         totalDurationText = findViewById(R.id.total_time);
         currentMusic = findViewById(R.id.current_music);
-        musicProgress = findViewById(R.id.music_progress);
         activityMainBinding.musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -341,7 +284,6 @@ public class MainActivity extends AppCompatActivity {
         String user = ((MusicPlayerApplication) getApplication()).getCurrentUser();
         Log.d(TAG, "current user: " + user);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         musicPlayerViewModel = new ViewModelProvider(this).get(MusicPlayerViewModel.class);

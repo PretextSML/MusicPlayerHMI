@@ -1,7 +1,6 @@
 package com.pretext.musicplayerhmi.viewmodels;
 
 import android.app.Application;
-import android.media.AudioManager;
 import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
@@ -23,20 +22,8 @@ public class MusicPlayerViewModel extends AndroidViewModel {
     private final MutableLiveData<MusicInfoUtil> currentMusic = new MutableLiveData<>();
     private final MutableLiveData<String> currentMusicName = new MutableLiveData<>("");
 
-    private final MutableLiveData<Integer> volumeLevel = new MutableLiveData<>();
-    private final MutableLiveData<Integer> maxVolumeLevel = new MutableLiveData<>();
-
     public MusicPlayerViewModel(@NonNull Application application) {
         super(application);
-
-        initVolume();
-    }
-
-    private void initVolume() {
-        AudioManager audioManager = getApplication().getSystemService(AudioManager.class);
-
-        volumeLevel.setValue(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
-        maxVolumeLevel.setValue(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
     }
 
     public MutableLiveData<Boolean> getIsPlaying() {
@@ -65,14 +52,6 @@ public class MusicPlayerViewModel extends AndroidViewModel {
 
     public MutableLiveData<String> getCurrentMusicName() {
         return currentMusicName;
-    }
-
-    public MutableLiveData<Integer> getVolumeLevel() {
-        return volumeLevel;
-    }
-
-    public MutableLiveData<Integer> getMaxVolumeLevel() {
-        return maxVolumeLevel;
     }
 
     public void playMusic(MusicInfoUtil music, boolean isFromList) throws RemoteException {
