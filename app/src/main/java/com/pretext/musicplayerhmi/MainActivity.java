@@ -1,7 +1,6 @@
 package com.pretext.musicplayerhmi;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,8 +31,8 @@ import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
-import com.pretext.musicplayerhmi.viewmodels.MusicPlayerViewModel;
-import com.pretext.musicplayerhmi.viewmodels.VolumeViewModel;
+import com.pretext.musicplayerhmi.viewmodel.MusicPlayerViewModel;
+import com.pretext.musicplayerhmi.viewmodel.VolumeViewModel;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
 
 import java.util.concurrent.ExecutorService;
@@ -43,10 +42,27 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "[MainActivity]";
     private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
-    private static Context context;
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
     MusicPlayerViewModel musicPlayerViewModel;
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 1) {
+                Log.d(TAG, "handleMessage: get message from profile fragment");
+                MusicInfoUtil musicInfoUtil = msg.getData().getSerializable("playMusic", MusicInfoUtil.class);
+                boolean isFromList = msg.getData().getBoolean("fromList");
+                if (musicInfoUtil != null) {
+                    try {
+                        musicPlayerViewModel.playMusic(musicInfoUtil, isFromList);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    };
     VolumeViewModel volumeViewModel;
     ActivityMainBinding activityMainBinding;
     private final IMusicProgressCallback callback = new IMusicProgressCallback.Stub() {
@@ -78,30 +94,12 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     };
-    private final Handler handler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            super.handleMessage(msg);
-            if (msg.what == 1) {
-                Log.d(TAG, "handleMessage: get message from profile fragment");
-                MusicInfoUtil musicInfoUtil = msg.getData().getSerializable("playMusic", MusicInfoUtil.class);
-                boolean isFromList = msg.getData().getBoolean("fromList");
-                if (musicInfoUtil != null) {
-                    playMusic(musicInfoUtil, isFromList);
-                }
-            }
-        }
-    };
     VolumePopupBinding volumePopupBinding;
-    private SeekBar musicProgress;
     private ImageButton pauseAndResume;
-    private TextView currentMusic;
     private TextView totalDurationText;
     private ImageButton nextMusic;
     private ImageButton previousMusic;
     private PopupWindow popupWindow;
-    private int maxVolume;
-    private int currentVolume;
 
     public static ExecutorService getExecutorService() {
         return executorService;
@@ -125,21 +123,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void playMusic(MusicInfoUtil info, boolean isFromList) {
-        Log.d(TAG, "playMusic: " + info.getMusicName());
-        String[] split = info.getMusicName().split(" - ");
-        String name = split[1].substring(0, split[1].length() - 4);
-
-        musicPlayerViewModel.getMaxProgress().setValue((int) info.getMusicDuration());
-        activityMainBinding.totalTime.setText(formatTime((int) info.getMusicDuration()));
-
-        try {
-            musicPlayerViewModel.playMusic(info, isFromList);
+    public void initPlayerComponent() {
+        musicPlayerViewModel.getMaxProgress().observe(this, maxProgress -> {
+            activityMainBinding.totalTime.setText(formatTime(maxProgress));
+            Log.d(TAG, "Observe max prorgess here.");
+        });
+        musicPlayerViewModel.getCurrentMusic().observe(this, currentMusic -> {
+            Log.d(TAG, "Observe current music here.");
             if (!((MusicPlayerApplication) getApplication()).getCurrentUser().equals("GUEST"))
-                HistoryFragment.getInstance().addHistoryList(name);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+                HistoryFragment.getInstance().addHistoryList(currentMusic.getMusicName());
+        });
     }
 
     public void initPopupWindow() {
@@ -190,10 +183,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initSeekBar() {
-        Log.d(TAG, "initSeekBar: " + currentMusic);
-
         totalDurationText = findViewById(R.id.total_time);
-        currentMusic = findViewById(R.id.current_music);
         activityMainBinding.musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -267,9 +257,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initFragment() {
-        ProfileFragment.getInstance().setHandler(handler);
-        MusicListFragment.getInstance().setHandler(handler);
-
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.frame_layout, ProfileFragment.getInstance(), "Profile").show(ProfileFragment.getInstance());
@@ -280,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        context = getApplicationContext();
         String user = ((MusicPlayerApplication) getApplication()).getCurrentUser();
         Log.d(TAG, "current user: " + user);
         super.onCreate(savedInstanceState);
@@ -295,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
         initVolume();
         initMenu();
         initFragment();
+        initPlayerComponent();
         resetToDefault();
         MusicPlayerServiceConnection.getInstance().setMusicProgressCallback(callback);
         MusicPlayerServiceConnection.getInstance().activateService();

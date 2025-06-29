@@ -6,7 +6,7 @@
 
         <variable
             name="volumeViewModel"
-            type="com.pretext.musicplayerhmi.viewmodels.VolumeViewModel" />
+            type="com.pretext.musicplayerhmi.viewmodel.VolumeViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

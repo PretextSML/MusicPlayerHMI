@@ -6,7 +6,7 @@
 
         <variable
             name="loginViewModel"
-            type="com.pretext.musicplayerhmi.viewmodels.LoginViewModel" />
+            type="com.pretext.musicplayerhmi.viewmodel.LoginViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

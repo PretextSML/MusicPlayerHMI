@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.databinding.ActivityLoginBinding;
-import com.pretext.musicplayerhmi.viewmodels.LoginViewModel;
+import com.pretext.musicplayerhmi.viewmodel.LoginViewModel;
 
 public class LoginActivity extends AppCompatActivity {
 

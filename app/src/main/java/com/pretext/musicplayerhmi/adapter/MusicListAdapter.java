@@ -3,9 +3,7 @@ package com.pretext.musicplayerhmi.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.RemoteException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -22,22 +20,24 @@ import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
+import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
+import com.pretext.musicplayerhmi.viewmodel.MusicPlayerViewModel;
 
 import java.io.IOException;
 import java.util.List;
 
 public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
+    private final MusicPlayerViewModel musicPlayerViewModel;
+    private final CustomListViewModel customListViewModel;
     private final List<MusicInfoUtil> musicInfoUtilList;
     private final Context context;
-    private final Handler handler;
-    private Bundle bundle;
-    private Message message;
 
-    public MusicListAdapter(List<MusicInfoUtil> musicInfoUtilList, Context context, Handler handler) {
+    public MusicListAdapter(List<MusicInfoUtil> musicInfoUtilList, Context context, MusicPlayerViewModel musicPlayerViewModel, CustomListViewModel customListViewModel) {
         this.musicInfoUtilList = musicInfoUtilList;
         this.context = context;
-        this.handler = handler;
+        this.musicPlayerViewModel = musicPlayerViewModel;
+        this.customListViewModel = customListViewModel;
     }
 
     @NonNull
@@ -65,6 +65,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
         holder.addToMusicList.setOnClickListener(v -> {
             if (!ProfileFragment.getInstance().isInPlayList(info)) {
                 ProfileFragment.getInstance().addToPlayList(info);
+                customListViewModel.addToMusicList(info);
                 holder.addToMusicList.setImageResource(R.drawable.playlist_add_check);
             } else {
                 Toast.makeText(v.getContext(), "Music already in music list", Toast.LENGTH_SHORT).show();
@@ -78,15 +79,11 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
             }
 
             ProfileFragment.getInstance().reset(true);
-            bundle = new Bundle();
-            bundle.putSerializable("playMusic", info);
-            bundle.putBoolean("fromList", false);
-
-            message = new Message();
-            message.what = 1;
-            message.setData(bundle);
-
-            handler.sendMessage(message);
+            try {
+                musicPlayerViewModel.playMusic(info, false);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 

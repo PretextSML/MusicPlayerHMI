@@ -16,23 +16,25 @@ import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
+import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
     private static final String TAG = "[profileListAdapter]";
-    private final List<MusicInfoUtil> musicInfoUtilList;
     private final Map<Integer, MusicListViewHolder> musicListViewHolderMap = new HashMap<>();
+    private final CustomListViewModel customListViewModel;
     private final Context context;
 
-    public ProfileListAdapter(List<MusicInfoUtil> musicInfoUtilList, Context context) {
-        this.musicInfoUtilList = musicInfoUtilList;
+    public ProfileListAdapter(Context context, CustomListViewModel customListViewModel) {
         this.context = context;
+        this.customListViewModel = customListViewModel;
     }
+
 
     @NonNull
     @Override
@@ -44,7 +46,7 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
-        MusicInfoUtil info = musicInfoUtilList.get(position);
+        MusicInfoUtil info = Objects.requireNonNull(customListViewModel.getMusicList().getValue()).get(position);
         musicListViewHolderMap.put(position, holder);
 
         setDefaultAlbumCover(holder);
@@ -90,8 +92,8 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
 
             holder.itemView.post(() -> {
                 if (currentPosition != RecyclerView.NO_POSITION &&
-                        currentPosition < musicInfoUtilList.size() &&
-                        currentPath.equals(musicInfoUtilList.get(currentPosition).getMusicPath())) {
+                        currentPosition < Objects.requireNonNull(customListViewModel.getMusicList().getValue()).size() &&
+                        currentPath.equals(customListViewModel.getMusicList().getValue().get(currentPosition).getMusicPath())) {
 
                     if (finalData != null) {
                         Glide.with(context)
@@ -111,6 +113,6 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
 
     @Override
     public int getItemCount() {
-        return musicInfoUtilList.size();
+        return Objects.requireNonNull(customListViewModel.getMusicList().getValue()).size();
     }
 }

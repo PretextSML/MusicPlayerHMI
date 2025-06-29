@@ -1,4 +1,4 @@
-package com.pretext.musicplayerhmi.viewmodels;
+package com.pretext.musicplayerhmi.viewmodel;
 
 import android.app.Application;
 import android.content.Context;

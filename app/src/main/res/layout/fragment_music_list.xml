@@ -6,7 +6,7 @@
 
         <variable
             name="musicListViewModel"
-            type="com.pretext.musicplayerhmi.viewmodels.MusicListViewModel" />
+            type="com.pretext.musicplayerhmi.viewmodel.MusicListViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
