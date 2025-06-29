@@ -24,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="GUEST Unavailable"
+                android:text="@string/guest_unavailable"
                 android:textColor="@color/white"
                 android:textSize="50sp" />
 
@@ -43,7 +43,7 @@
                 android:background="#11000000"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="User History"
+                android:text="@string/user_history"
                 android:textColor="@color/white"
                 android:textSize="30sp"
                 app:layout_constraintBottom_toTopOf="@id/history_list"

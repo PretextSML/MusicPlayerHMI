@@ -119,7 +119,7 @@
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_login_btn"
                 android:enabled="@{!loginViewModel.isLoading}"
-                android:text="Login as tourist"
+                android:text="@string/login_as_tourist"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="20sp"

@@ -10,4 +10,18 @@
     <string name="default_duration">0:00</string>
     <string name="now_playing">Now playing: %1$s</string>
     <string name="history_title">%1$s\'s history</string>
+    <string name="login_as_tourist">Login as tourist</string>
+    <string name="default_time">0:00</string>
+    <string name="play_and_pause">play_and_pause</string>
+    <string name="skip_next">skip_next</string>
+    <string name="skip_previous">skip_previous</string>
+    <string name="stop_music">stop_music</string>
+    <string name="change_volume">change_volume</string>
+    <string name="current_music_list">Current music list</string>
+    <string name="play_all">Play all</string>
+    <string name="play">play</string>
+    <string name="guest_unavailable">GUEST Unavailable</string>
+    <string name="user_history">User History</string>
+    <string name="add_to_music_list">add_to_music_list</string>
+    <string name="music_album">music_album</string>
 </resources>
