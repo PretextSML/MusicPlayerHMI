@@ -25,58 +25,58 @@ import java.util.Objects;
 public class ProfileFragment extends Fragment {
     private static final String TAG = "[Profile]";
 
-    private ProfileListAdapter profileListAdapter;
-    private MusicPlayerViewModel musicPlayerViewModel;
-    private CustomListViewModel customListViewModel;
-    private FragmentProfileBinding fragmentProfileBinding;
+    private ProfileListAdapter mProfileListAdapter;
+    private MusicPlayerViewModel mMusicPlayerViewModel;
+    private CustomListViewModel mCustomListViewModel;
+    private FragmentProfileBinding mFragmentProfileBinding;
 
     public void initMusicList() {
-        profileListAdapter = new ProfileListAdapter(getContext(), customListViewModel);
+        mProfileListAdapter = new ProfileListAdapter(getContext(), mCustomListViewModel);
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 1);
-        Log.d(TAG, "initMusicList: " + profileListAdapter);
-        fragmentProfileBinding.musicList.setAdapter(profileListAdapter);
-        fragmentProfileBinding.musicList.setLayoutManager(layoutManager);
+        Log.d(TAG, "initMusicList: " + mProfileListAdapter);
+        mFragmentProfileBinding.musicList.setAdapter(mProfileListAdapter);
+        mFragmentProfileBinding.musicList.setLayoutManager(layoutManager);
     }
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        musicPlayerViewModel = new ViewModelProvider(requireActivity()).get(MusicPlayerViewModel.class);
-        customListViewModel = new ViewModelProvider(requireActivity()).get(CustomListViewModel.class);
-        fragmentProfileBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_profile, container, false);
-        fragmentProfileBinding.setCustomListViewModel(customListViewModel);
-        fragmentProfileBinding.setLifecycleOwner(getViewLifecycleOwner());
+        mMusicPlayerViewModel = new ViewModelProvider(requireActivity()).get(MusicPlayerViewModel.class);
+        mCustomListViewModel = new ViewModelProvider(requireActivity()).get(CustomListViewModel.class);
+        mFragmentProfileBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_profile, container, false);
+        mFragmentProfileBinding.setCustomListViewModel(mCustomListViewModel);
+        mFragmentProfileBinding.setLifecycleOwner(getViewLifecycleOwner());
 
         initMusicList();
 
-        return fragmentProfileBinding.getRoot();
+        return mFragmentProfileBinding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        fragmentProfileBinding.btnPlayAll.setOnClickListener(v -> {
-            if (!Objects.requireNonNull(customListViewModel.getMusicList().getValue()).isEmpty()) {
-                customListViewModel.playNext();
+        mFragmentProfileBinding.btnPlayAll.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(mCustomListViewModel.getMusicList().getValue()).isEmpty()) {
+                mCustomListViewModel.playNext();
             }
         });
 
-        customListViewModel.getMusicList().observe(getViewLifecycleOwner(), musicList -> {
+        mCustomListViewModel.getMusicList().observe(getViewLifecycleOwner(), musicList -> {
             Log.d(TAG, "Observe music list change.");
-            profileListAdapter.notifyItemInserted(musicList.size());
+            mProfileListAdapter.notifyItemInserted(musicList.size());
         });
 
-        customListViewModel.getCurrentMusic().observe(getViewLifecycleOwner(), currentMusic -> {
+        mCustomListViewModel.getCurrentMusic().observe(getViewLifecycleOwner(), currentMusic -> {
             if (currentMusic != -1) {
                 try {
-                    musicPlayerViewModel.playMusic(Objects.requireNonNull(customListViewModel.getMusicList().getValue()).get(currentMusic), true);
+                    mMusicPlayerViewModel.playMusic(Objects.requireNonNull(mCustomListViewModel.getMusicList().getValue()).get(currentMusic), true);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             } else {
-                musicPlayerViewModel.stopMusic();
+                mMusicPlayerViewModel.stopMusic();
             }
         });
     }

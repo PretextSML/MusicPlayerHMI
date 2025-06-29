@@ -22,40 +22,40 @@ import com.pretext.musicplayerhmi.viewmodel.HistoryViewModel;
 public class HistoryFragment extends Fragment {
     public static final String TAG = "[HistoryFragment]";
 
-    private HistoryAdapter historyAdapter;
-    private HistoryViewModel historyViewModel;
-    private FragmentHistoryBinding fragmentHistoryBinding;
+    private HistoryAdapter mHistoryAdapter;
+    private HistoryViewModel mHistoryViewModel;
+    private FragmentHistoryBinding mFragmentHistoryBinding;
 
     public void initHistoryList() {
-        fragmentHistoryBinding.historyTitle.setText(String.format(getResources().getString(R.string.history_title), ((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser()));
-        historyAdapter = new HistoryAdapter(historyViewModel);
+        mFragmentHistoryBinding.historyTitle.setText(String.format(getResources().getString(R.string.history_title), ((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser()));
+        mHistoryAdapter = new HistoryAdapter(mHistoryViewModel);
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 1);
-        fragmentHistoryBinding.historyList.setAdapter(historyAdapter);
-        fragmentHistoryBinding.historyList.setLayoutManager(layoutManager);
+        mFragmentHistoryBinding.historyList.setAdapter(mHistoryAdapter);
+        mFragmentHistoryBinding.historyList.setLayoutManager(layoutManager);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        historyViewModel = new ViewModelProvider(requireActivity()).get(HistoryViewModel.class);
-        fragmentHistoryBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_history, container, false);
-        fragmentHistoryBinding.setHistoryViewModel(historyViewModel);
-        fragmentHistoryBinding.setLifecycleOwner(getViewLifecycleOwner());
+        mHistoryViewModel = new ViewModelProvider(requireActivity()).get(HistoryViewModel.class);
+        mFragmentHistoryBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_history, container, false);
+        mFragmentHistoryBinding.setHistoryViewModel(mHistoryViewModel);
+        mFragmentHistoryBinding.setLifecycleOwner(getViewLifecycleOwner());
 
         if (!((MusicPlayerApplication) requireActivity().getApplication()).getCurrentUser().equals("GUEST")) {
             Log.d(TAG, "Get user history");
-            historyViewModel.getHistoryListFromDB();
+            mHistoryViewModel.getHistoryListFromDB();
 
-            historyViewModel.getHistoryList().observe(getViewLifecycleOwner(), historyList -> {
-                Log.d(TAG, "Observce history change");
-                historyAdapter.notifyItemInserted(historyList.getHistoryList().size());
+            mHistoryViewModel.getHistoryList().observe(getViewLifecycleOwner(), historyList -> {
+                Log.d(TAG, "Observe history change");
+                mHistoryAdapter.notifyItemInserted(historyList.getHistoryList().size());
             });
             initHistoryList();
         } else {
-            fragmentHistoryBinding.getRoot().findViewById(R.id.user).setVisibility(View.GONE);
-            fragmentHistoryBinding.getRoot().findViewById(R.id.guest).setVisibility(View.VISIBLE);
+            mFragmentHistoryBinding.getRoot().findViewById(R.id.user).setVisibility(View.GONE);
+            mFragmentHistoryBinding.getRoot().findViewById(R.id.guest).setVisibility(View.VISIBLE);
         }
 
-        return fragmentHistoryBinding.getRoot();
+        return mFragmentHistoryBinding.getRoot();
     }
 }

@@ -14,23 +14,23 @@ import java.util.Objects;
 public class CustomListViewModel extends ViewModel {
 
     private static final String TAG = "[CustomListViewModel]";
-    private final MutableLiveData<List<MusicInfoUtil>> musicList = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<Integer> currentMusic = new MutableLiveData<>(-1);
+    private final MutableLiveData<List<MusicInfoUtil>> mMusicList = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<Integer> mCurrentMusic = new MutableLiveData<>(-1);
 
     public MutableLiveData<List<MusicInfoUtil>> getMusicList() {
-        return musicList;
+        return mMusicList;
     }
 
     public MutableLiveData<Integer> getCurrentMusic() {
-        return currentMusic;
+        return mCurrentMusic;
     }
 
     public void playNext() {
-        if (!Objects.requireNonNull(musicList.getValue()).isEmpty()) {
-            int current = currentMusic.getValue() != null ? currentMusic.getValue() : -1;
-            if (current + 1 < musicList.getValue().size()) {
+        if (!Objects.requireNonNull(mMusicList.getValue()).isEmpty()) {
+            int current = mCurrentMusic.getValue() != null ? mCurrentMusic.getValue() : -1;
+            if (current + 1 < mMusicList.getValue().size()) {
                 Log.d(TAG, "playNext");
-                currentMusic.setValue(current + 1);
+                mCurrentMusic.setValue(current + 1);
             } else {
                 reset();
             }
@@ -38,11 +38,11 @@ public class CustomListViewModel extends ViewModel {
     }
 
     public void playPrevious() {
-        if (!Objects.requireNonNull(musicList.getValue()).isEmpty()) {
-            int current = currentMusic.getValue() != null ? currentMusic.getValue() : -1;
+        if (!Objects.requireNonNull(mMusicList.getValue()).isEmpty()) {
+            int current = mCurrentMusic.getValue() != null ? mCurrentMusic.getValue() : -1;
             if (current - 1 >= 0) {
                 Log.d(TAG, "playPrevious");
-                currentMusic.setValue(current - 1);
+                mCurrentMusic.setValue(current - 1);
             } else {
                 reset();
             }
@@ -50,17 +50,17 @@ public class CustomListViewModel extends ViewModel {
     }
 
     public void reset() {
-        currentMusic.setValue(-1);
+        mCurrentMusic.setValue(-1);
     }
 
     public void addToMusicList(MusicInfoUtil musicInfo) {
-        List<MusicInfoUtil> currentList = musicList.getValue();
+        List<MusicInfoUtil> currentList = mMusicList.getValue();
         if (currentList != null) {
             List<MusicInfoUtil> newList = new ArrayList<>(currentList);
             newList.add(musicInfo);
-            musicList.setValue(newList);
+            mMusicList.setValue(newList);
         }
         Log.d(TAG, "add to music list: " + musicInfo.getMusicName());
-        Log.d(TAG, "current music list size: " + musicList.getValue().size());
+        Log.d(TAG, "current music list size: " + mMusicList.getValue().size());
     }
 }

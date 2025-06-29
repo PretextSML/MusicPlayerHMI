@@ -24,10 +24,10 @@ public class MusicListFragment extends Fragment {
 
     private static final String TAG = "[MusicListFragment]";
 
-    private MusicListViewModel musicListViewModel;
-    private MusicPlayerViewModel musicPlayerViewModel;
-    private CustomListViewModel customListViewModel;
-    private FragmentMusicListBinding musicListBinding;
+    private MusicListViewModel mMusicListViewModel;
+    private MusicPlayerViewModel mMusicPlayerViewModel;
+    private CustomListViewModel mCustomListViewModel;
+    private FragmentMusicListBinding mMusicListBinding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,31 +35,31 @@ public class MusicListFragment extends Fragment {
 
         Log.d(TAG, "Create music list fragment");
 
-        musicListViewModel = new ViewModelProvider(requireActivity()).get(MusicListViewModel.class);
-        musicPlayerViewModel = new ViewModelProvider(requireActivity()).get(MusicPlayerViewModel.class);
-        customListViewModel = new ViewModelProvider(requireActivity()).get(CustomListViewModel.class);
+        mMusicListViewModel = new ViewModelProvider(requireActivity()).get(MusicListViewModel.class);
+        mMusicPlayerViewModel = new ViewModelProvider(requireActivity()).get(MusicPlayerViewModel.class);
+        mCustomListViewModel = new ViewModelProvider(requireActivity()).get(CustomListViewModel.class);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        musicListBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false);
-        musicListBinding.setMusicListViewModel(musicListViewModel);
-        musicListBinding.setLifecycleOwner(getViewLifecycleOwner());
+        mMusicListBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false);
+        mMusicListBinding.setMusicListViewModel(mMusicListViewModel);
+        mMusicListBinding.setLifecycleOwner(getViewLifecycleOwner());
 
-        return musicListBinding.getRoot();
+        return mMusicListBinding.getRoot();
     }
 
     public void initRecyclerView() {
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 1);
-        musicListBinding.musicList.setLayoutManager(layoutManager);
+        mMusicListBinding.musicList.setLayoutManager(layoutManager);
     }
 
     public void initObserveViewModel() {
-        musicListViewModel.getMusicList().observe(getViewLifecycleOwner(), musicList -> {
+        mMusicListViewModel.getMusicList().observe(getViewLifecycleOwner(), musicList -> {
             if (musicList != null && !musicList.isEmpty()) {
-                MusicListAdapter adapter = new MusicListAdapter(musicList, getContext(), musicPlayerViewModel, customListViewModel);
-                musicListBinding.musicList.setAdapter(adapter);
+                MusicListAdapter adapter = new MusicListAdapter(musicList, getContext(), mMusicPlayerViewModel, mCustomListViewModel);
+                mMusicListBinding.musicList.setAdapter(adapter);
             }
         });
     }
@@ -71,6 +71,6 @@ public class MusicListFragment extends Fragment {
         initRecyclerView();
         initObserveViewModel();
 
-        musicListViewModel.loadMusicFiles();
+        mMusicListViewModel.loadMusicFiles();
     }
 }

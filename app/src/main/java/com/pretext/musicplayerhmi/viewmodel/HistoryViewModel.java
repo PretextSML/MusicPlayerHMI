@@ -16,26 +16,26 @@ import java.util.Objects;
 
 public class HistoryViewModel extends AndroidViewModel {
     private static final String TAG = "[HistoryViewModel]";
-    private final MutableLiveData<HistoryUtil> userHistory = new MutableLiveData<>(new HistoryUtil());
+    private final MutableLiveData<HistoryUtil> mUserHistory = new MutableLiveData<>(new HistoryUtil());
 
     public HistoryViewModel(@NonNull Application application) {
         super(application);
     }
 
     public MutableLiveData<HistoryUtil> getHistoryList() {
-        return userHistory;
+        return mUserHistory;
     }
 
-    public void addHistorList(String musicName) {
-        if (userHistory.getValue() != null) {
-            HistoryUtil currentHistory = userHistory.getValue();
+    public void addHistoryList(String musicName) {
+        if (mUserHistory.getValue() != null) {
+            HistoryUtil currentHistory = mUserHistory.getValue();
             currentHistory.addMusic(musicName);
-            userHistory.setValue(currentHistory);
-            Log.d(TAG, "add to history: " + userHistory.getValue().getHistoryList().size());
-            Objects.requireNonNull(userHistory.getValue()).addMusic(musicName);
+            mUserHistory.setValue(currentHistory);
+            Log.d(TAG, "add to history: " + mUserHistory.getValue().getHistoryList().size());
+            Objects.requireNonNull(mUserHistory.getValue()).addMusic(musicName);
             try {
                 Log.d(TAG, "modify history to database");
-                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setHistory(((MusicPlayerApplication) getApplication()).getCurrentUser(), userHistory.getValue().toJson());
+                MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().setHistory(((MusicPlayerApplication) getApplication()).getCurrentUser(), mUserHistory.getValue().toJson());
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
@@ -46,8 +46,8 @@ public class HistoryViewModel extends AndroidViewModel {
         try {
             String history = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().getHistory(((MusicPlayerApplication) getApplication()).getCurrentUser());
             if (history != null) {
-                if (Objects.requireNonNull(userHistory.getValue()).fromGson(history) != null) {
-                    userHistory.setValue(userHistory.getValue().fromGson(history));
+                if (Objects.requireNonNull(mUserHistory.getValue()).fromGson(history) != null) {
+                    mUserHistory.setValue(mUserHistory.getValue().fromGson(history));
                 }
             }
         } catch (RemoteException e) {

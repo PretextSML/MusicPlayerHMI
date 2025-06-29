@@ -6,24 +6,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HistoryUtil {
-    private final List<String> historyList = new ArrayList<>();
+    private final List<String> mHistoryList = new ArrayList<>();
 
-    public String addMusic(String song) {
-        if (historyList.isEmpty()) {
-            historyList.add(song);
-            return historyList.size() + " : " + song;
-        } else if (!historyList.get(historyList.size() - 1).equals(song)) {
-            historyList.add(song);
-            return historyList.size() + " : " + song;
+    public void addMusic(String song) {
+        if (mHistoryList.isEmpty()) {
+            mHistoryList.add(song);
+        } else if (!mHistoryList.get(mHistoryList.size() - 1).equals(song)) {
+            mHistoryList.add(song);
         }
-
-        return null;
     }
 
     public List<String> getHistoryList() {
         List<String> numberedList = new ArrayList<>();
         int cnt = 0;
-        for (String name : historyList) {
+        for (String name : mHistoryList) {
             cnt++;
             numberedList.add(cnt + " : " + name);
         }

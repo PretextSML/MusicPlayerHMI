@@ -9,10 +9,10 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
 public class VolumeViewModel extends AndroidViewModel {
-    private final MutableLiveData<Integer> volumeLevel = new MutableLiveData<>(0);
-    private final MutableLiveData<Integer> maxVolumeLevel = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> mVolumeLevel = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> mMaxVolumeLevel = new MutableLiveData<>(0);
 
-    private AudioManager audioManager;
+    private AudioManager mAudioManager;
 
     public VolumeViewModel(@NonNull Application application) {
         super(application);
@@ -21,23 +21,23 @@ public class VolumeViewModel extends AndroidViewModel {
     }
 
     public MutableLiveData<Integer> getVolumeLevel() {
-        return volumeLevel;
+        return mVolumeLevel;
     }
 
     public void setVolumeLevel(int level) {
-        volumeLevel.setValue(level);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, level, AudioManager.FLAG_PLAY_SOUND);
+        mVolumeLevel.setValue(level);
+        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, level, AudioManager.FLAG_PLAY_SOUND);
     }
 
     public MutableLiveData<Integer> getMaxVolumeLevel() {
-        return maxVolumeLevel;
+        return mMaxVolumeLevel;
     }
 
     private void initVolume() {
-        audioManager = (AudioManager) getApplication().getSystemService(Service.AUDIO_SERVICE);
+        mAudioManager = (AudioManager) getApplication().getSystemService(Service.AUDIO_SERVICE);
 
-        volumeLevel.setValue(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
-        maxVolumeLevel.setValue(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+        mVolumeLevel.setValue(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+        mMaxVolumeLevel.setValue(mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
     }
 
 }

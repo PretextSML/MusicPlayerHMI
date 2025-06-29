@@ -10,10 +10,10 @@ import com.pretext.musicplayerhmi.R;
 
 public class HistoryViewHolder extends RecyclerView.ViewHolder {
 
-    public TextView history;
+    public TextView mHistory;
 
     public HistoryViewHolder(@NonNull View itemView) {
         super(itemView);
-        history = itemView.findViewById(R.id.history_detail);
+        mHistory = itemView.findViewById(R.id.history_detail);
     }
 }

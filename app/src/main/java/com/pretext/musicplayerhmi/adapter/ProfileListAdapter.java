@@ -23,12 +23,12 @@ import java.util.Objects;
 
 public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
-    private final CustomListViewModel customListViewModel;
-    private final Context context;
+    private final CustomListViewModel mCustomListViewModel;
+    private final Context mContext;
 
-    public ProfileListAdapter(Context context, CustomListViewModel customListViewModel) {
-        this.context = context;
-        this.customListViewModel = customListViewModel;
+    public ProfileListAdapter(Context mContext, CustomListViewModel mCustomListViewModel) {
+        this.mContext = mContext;
+        this.mCustomListViewModel = mCustomListViewModel;
     }
 
 
@@ -42,7 +42,7 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
-        MusicInfoUtil info = Objects.requireNonNull(customListViewModel.getMusicList().getValue()).get(position);
+        MusicInfoUtil info = Objects.requireNonNull(mCustomListViewModel.getMusicList().getValue()).get(position);
 
         setDefaultAlbumCover(holder);
 
@@ -50,18 +50,18 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
         String name = split[1].substring(0, split[1].length() - 4);
         String author = split[0];
 
-        holder.musicName.setText(name);
-        holder.musicAuthor.setText(author);
-        holder.addToMusicList.setVisibility(View.GONE);
+        holder.mMusicName.setText(name);
+        holder.mMusicAuthor.setText(author);
+        holder.mAddToMusicList.setVisibility(View.GONE);
 
         loadAlbumCoverAsync(holder, info);
     }
 
     private void setDefaultAlbumCover(MusicListViewHolder holder) {
-        Glide.with(context)
+        Glide.with(mContext)
                 .load(R.drawable.album_default)
                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                .into(holder.musicAlbum);
+                .into(holder.mMusicAlbum);
     }
 
     private void loadAlbumCoverAsync(MusicListViewHolder holder, MusicInfoUtil info) {
@@ -83,14 +83,14 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
 
             holder.itemView.post(() -> {
                 if (currentPosition != RecyclerView.NO_POSITION &&
-                        currentPosition < Objects.requireNonNull(customListViewModel.getMusicList().getValue()).size() &&
-                        currentPath.equals(customListViewModel.getMusicList().getValue().get(currentPosition).getMusicPath())) {
+                        currentPosition < Objects.requireNonNull(mCustomListViewModel.getMusicList().getValue()).size() &&
+                        currentPath.equals(mCustomListViewModel.getMusicList().getValue().get(currentPosition).getMusicPath())) {
 
                     if (finalData != null) {
-                        Glide.with(context)
+                        Glide.with(mContext)
                                 .load(finalData)
                                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                                .into(holder.musicAlbum);
+                                .into(holder.mMusicAlbum);
                     }
                 }
             });
@@ -104,6 +104,6 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
 
     @Override
     public int getItemCount() {
-        return Objects.requireNonNull(customListViewModel.getMusicList().getValue()).size();
+        return Objects.requireNonNull(mCustomListViewModel.getMusicList().getValue()).size();
     }
 }

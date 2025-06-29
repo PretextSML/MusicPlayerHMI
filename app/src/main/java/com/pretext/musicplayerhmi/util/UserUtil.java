@@ -7,31 +7,31 @@ import com.pretext.musicplayerhmi.BR;
 
 
 public class UserUtil extends BaseObservable {
-    private String account;
-    private String password;
+    private String mAccount;
+    private String mPassword;
 
-    public UserUtil(String account, String password) {
-        this.account = account;
-        this.password = password;
+    public UserUtil(String mAccount, String mPassword) {
+        this.mAccount = mAccount;
+        this.mPassword = mPassword;
     }
 
     @Bindable
     public String getAccount() {
-        return account;
+        return mAccount;
+    }
+
+    public void setAccount(String mAccount) {
+        this.mAccount = mAccount;
+        notifyPropertyChanged(BR.account);
     }
 
     @Bindable
     public String getPassword() {
-        return password;
+        return mPassword;
     }
 
-    public void setAccount(String account) {
-        this.account = account;
-        notifyPropertyChanged(BR.account);
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPassword(String mPassword) {
+        this.mPassword = mPassword;
         notifyPropertyChanged(BR.password);
     }
 }

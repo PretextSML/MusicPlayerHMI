@@ -14,10 +14,10 @@ import java.util.Objects;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
-    private final HistoryViewModel historyViewModel;
+    private final HistoryViewModel mHistoryViewModel;
 
-    public HistoryAdapter(HistoryViewModel historyViewModel) {
-        this.historyViewModel = historyViewModel;
+    public HistoryAdapter(HistoryViewModel mHistoryViewModel) {
+        this.mHistoryViewModel = mHistoryViewModel;
     }
 
     @NonNull
@@ -29,7 +29,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
-        holder.history.setText(Objects.requireNonNull(historyViewModel.getHistoryList().getValue()).getHistoryList().get(position));
+        holder.mHistory.setText(Objects.requireNonNull(mHistoryViewModel.getHistoryList().getValue()).getHistoryList().get(position));
     }
 
     @Override
@@ -39,6 +39,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     @Override
     public int getItemCount() {
-        return Objects.requireNonNull(historyViewModel.getHistoryList().getValue()).getHistoryList().size();
+        return Objects.requireNonNull(mHistoryViewModel.getHistoryList().getValue()).getHistoryList().size();
     }
 }

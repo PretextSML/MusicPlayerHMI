@@ -3,25 +3,25 @@ package com.pretext.musicplayerhmi.util;
 import java.io.Serializable;
 
 public class MusicInfoUtil implements Serializable {
-    private final String musicName;
-    private final String musicPath;
-    private final long musicDuration;
+    private final String mMusicName;
+    private final String mMusicPath;
+    private final long mMusicDuration;
 
-    public MusicInfoUtil(String musicName, long musicDuration, String musicPath) {
-        this.musicName = musicName;
-        this.musicDuration = musicDuration;
-        this.musicPath = musicPath;
+    public MusicInfoUtil(String mMusicName, long mMusicDuration, String mMusicPath) {
+        this.mMusicName = mMusicName;
+        this.mMusicDuration = mMusicDuration;
+        this.mMusicPath = mMusicPath;
     }
 
     public String getMusicName() {
-        return musicName;
+        return mMusicName;
     }
 
     public long getMusicDuration() {
-        return musicDuration;
+        return mMusicDuration;
     }
 
     public String getMusicPath() {
-        return musicPath;
+        return mMusicPath;
     }
 }

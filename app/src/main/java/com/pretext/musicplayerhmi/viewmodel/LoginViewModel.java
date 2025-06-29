@@ -14,73 +14,73 @@ import com.pretext.musicplayerhmi.util.UserUtil;
 import java.util.concurrent.Executors;
 
 public class LoginViewModel extends ViewModel {
-    private final MutableLiveData<UserUtil> user = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
-    private final MutableLiveData<LoginResultUtil> loginResult = new MutableLiveData<>();
-    private final MutableLiveData<RegisterResultUtil> registerResult = new MutableLiveData<>();
+    private final MutableLiveData<UserUtil> mUser = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> mIsLoading = new MutableLiveData<>();
+    private final MutableLiveData<LoginResultUtil> mLoginResult = new MutableLiveData<>();
+    private final MutableLiveData<RegisterResultUtil> mRegisterResult = new MutableLiveData<>();
 
     public LoginViewModel() {
-        user.setValue(new UserUtil("", ""));
+        mUser.setValue(new UserUtil("", ""));
     }
 
     public LiveData<UserUtil> getUser() {
-        return user;
+        return mUser;
     }
 
     public MutableLiveData<Boolean> getIsLoading() {
-        return isLoading;
+        return mIsLoading;
     }
 
     public MutableLiveData<LoginResultUtil> getLoginResult() {
-        return loginResult;
+        return mLoginResult;
     }
 
     public MutableLiveData<RegisterResultUtil> getRegisterResult() {
-        return registerResult;
+        return mRegisterResult;
     }
 
     public void authenticateUser(String account, String password) {
-        isLoading.setValue(true);
+        mIsLoading.setValue(true);
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 if (!account.isBlank() && !password.isBlank()) {
                     boolean isCorrect = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().authenticatedUser(account, password);
                     if (isCorrect) {
-                        loginResult.postValue(new LoginResultUtil(true, account));
+                        mLoginResult.postValue(new LoginResultUtil(true, account));
                     } else {
-                        loginResult.postValue(new LoginResultUtil(false, null, "Username or password error!"));
+                        mLoginResult.postValue(new LoginResultUtil(false, null, "Username or password error!"));
                     }
                 } else {
-                    loginResult.postValue(new LoginResultUtil(false, null, "Username or password is blank!"));
+                    mLoginResult.postValue(new LoginResultUtil(false, null, "Username or password is blank!"));
                 }
             } catch (RemoteException e) {
-                loginResult.postValue(new LoginResultUtil(false, null, "Unable to connect service!"));
+                mLoginResult.postValue(new LoginResultUtil(false, null, "Unable to connect service!"));
             } finally {
-                isLoading.postValue(false);
+                mIsLoading.postValue(false);
             }
         });
     }
 
     public void registerUser(String account, String password) {
-        isLoading.setValue(true);
+        mIsLoading.setValue(true);
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 if (!account.isBlank() && !password.isBlank()) {
                     boolean userExists = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().addNewUser(account, password);
                     if (!userExists) {
-                        registerResult.postValue(new RegisterResultUtil(true, account));
+                        mRegisterResult.postValue(new RegisterResultUtil(true, account));
                     } else {
-                        registerResult.postValue(new RegisterResultUtil(false, null, "User already exists!"));
+                        mRegisterResult.postValue(new RegisterResultUtil(false, null, "User already exists!"));
                     }
                 } else {
-                    registerResult.postValue(new RegisterResultUtil(false, null, "Username or password is blank!"));
+                    mRegisterResult.postValue(new RegisterResultUtil(false, null, "Username or password is blank!"));
                 }
             } catch (RemoteException e) {
-                registerResult.postValue(new RegisterResultUtil(false, null, "Unable to connect service!"));
+                mRegisterResult.postValue(new RegisterResultUtil(false, null, "Unable to connect service!"));
             } finally {
-                isLoading.postValue(false);
+                mIsLoading.postValue(false);
             }
         });
     }

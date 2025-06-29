@@ -1,32 +1,31 @@
 package com.pretext.musicplayerhmi.util;
 
 public class RegisterResultUtil {
-    private final boolean success;
-    private final String username;
-    private final String errorMessage;
+    private final boolean mSuccess;
+    private final String mUsername;
+    private final String mErrorMessage;
 
-
-    public RegisterResultUtil(boolean success, String username) {
-        this.success = success;
-        this.username = username;
-        this.errorMessage = null;
+    public RegisterResultUtil(boolean mSuccess, String mUsername) {
+        this.mSuccess = mSuccess;
+        this.mUsername = mUsername;
+        this.mErrorMessage = null;
     }
 
-    public RegisterResultUtil(boolean success, String username, String errorMessage) {
-        this.success = success;
-        this.username = username;
-        this.errorMessage = errorMessage;
+    public RegisterResultUtil(boolean mSuccess, String mUsername, String mErrorMessage) {
+        this.mSuccess = mSuccess;
+        this.mUsername = mUsername;
+        this.mErrorMessage = mErrorMessage;
     }
 
     public boolean isSuccess() {
-        return success;
+        return mSuccess;
     }
 
     public String getUsername() {
-        return username;
+        return mUsername;
     }
 
     public String getErrorMessage() {
-        return errorMessage;
+        return mErrorMessage;
     }
 }

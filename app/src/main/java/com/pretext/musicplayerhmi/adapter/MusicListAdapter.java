@@ -28,16 +28,16 @@ import java.util.Objects;
 
 public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
-    private final MusicPlayerViewModel musicPlayerViewModel;
-    private final CustomListViewModel customListViewModel;
-    private final List<MusicInfoUtil> musicInfoUtilList;
-    private final Context context;
+    private final MusicPlayerViewModel mMusicPlayerViewModel;
+    private final CustomListViewModel mCustomListViewModel;
+    private final List<MusicInfoUtil> mMusicInfoUtilList;
+    private final Context mContext;
 
-    public MusicListAdapter(List<MusicInfoUtil> musicInfoUtilList, Context context, MusicPlayerViewModel musicPlayerViewModel, CustomListViewModel customListViewModel) {
-        this.musicInfoUtilList = musicInfoUtilList;
-        this.context = context;
-        this.musicPlayerViewModel = musicPlayerViewModel;
-        this.customListViewModel = customListViewModel;
+    public MusicListAdapter(List<MusicInfoUtil> mMusicInfoUtilList, Context mContext, MusicPlayerViewModel mMusicPlayerViewModel, CustomListViewModel mCustomListViewModel) {
+        this.mMusicInfoUtilList = mMusicInfoUtilList;
+        this.mContext = mContext;
+        this.mMusicPlayerViewModel = mMusicPlayerViewModel;
+        this.mCustomListViewModel = mCustomListViewModel;
     }
 
     @NonNull
@@ -50,35 +50,35 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
-        MusicInfoUtil info = musicInfoUtilList.get(position);
+        MusicInfoUtil info = mMusicInfoUtilList.get(position);
 
         setDefaultAlbumCover(holder);
 
         String[] split = info.getMusicName().split(" - ");
         String name = split[1].substring(0, split[1].length() - 4);
         String author = split[0];
-        holder.musicName.setText(name);
-        holder.musicAuthor.setText(author);
+        holder.mMusicName.setText(name);
+        holder.mMusicAuthor.setText(author);
 
         loadAlbumCoverAsync(holder, info);
 
-        holder.addToMusicList.setOnClickListener(v -> {
-            if (!Objects.requireNonNull(customListViewModel.getMusicList().getValue()).contains(info)) {
-                customListViewModel.addToMusicList(info);
-                holder.addToMusicList.setImageResource(R.drawable.playlist_add_check);
+        holder.mAddToMusicList.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(mCustomListViewModel.getMusicList().getValue()).contains(info)) {
+                mCustomListViewModel.addToMusicList(info);
+                holder.mAddToMusicList.setImageResource(R.drawable.playlist_add_check);
             } else {
                 Toast.makeText(v.getContext(), "Music already in music list", Toast.LENGTH_SHORT).show();
             }
         });
 
-        holder.rootView.setOnClickListener(v -> {
+        holder.mRootView.setOnClickListener(v -> {
             if (!MusicPlayerServiceConnection.getInstance().getIsConnected()) {
                 Toast.makeText(v.getContext(), "Service not connected!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             try {
-                musicPlayerViewModel.playMusic(info, false);
+                mMusicPlayerViewModel.playMusic(info, false);
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
@@ -86,10 +86,10 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
     }
 
     private void setDefaultAlbumCover(MusicListViewHolder holder) {
-        Glide.with(context)
+        Glide.with(mContext)
                 .load(R.drawable.album_default)
                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                .into(holder.musicAlbum);
+                .into(holder.mMusicAlbum);
     }
 
     private void loadAlbumCoverAsync(MusicListViewHolder holder, MusicInfoUtil info) {
@@ -111,14 +111,14 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
 
             holder.itemView.post(() -> {
                 if (currentPosition != RecyclerView.NO_POSITION &&
-                        currentPosition < musicInfoUtilList.size() &&
-                        currentPath.equals(musicInfoUtilList.get(currentPosition).getMusicPath())) {
+                        currentPosition < mMusicInfoUtilList.size() &&
+                        currentPath.equals(mMusicInfoUtilList.get(currentPosition).getMusicPath())) {
 
                     if (finalData != null) {
-                        Glide.with(context)
+                        Glide.with(mContext)
                                 .load(finalData)
                                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                                .into(holder.musicAlbum);
+                                .into(holder.mMusicAlbum);
                     }
                 }
             });
@@ -132,6 +132,6 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
 
     @Override
     public int getItemCount() {
-        return musicInfoUtilList.size();
+        return mMusicInfoUtilList.size();
     }
 }

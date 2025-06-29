@@ -3,7 +3,7 @@ package com.pretext.musicplayerhmi.application;
 import android.app.Application;
 
 public class MusicPlayerApplication extends Application {
-    private String currentUser;
+    private String mCurrentUser;
 
     @Override
     public void onCreate() {
@@ -11,10 +11,10 @@ public class MusicPlayerApplication extends Application {
     }
 
     public String getCurrentUser() {
-        return currentUser;
+        return mCurrentUser;
     }
 
-    public void setCurrentUser(String currentUser) {
-        this.currentUser = currentUser;
+    public void setCurrentUser(String mCurrentUser) {
+        this.mCurrentUser = mCurrentUser;
     }
 }

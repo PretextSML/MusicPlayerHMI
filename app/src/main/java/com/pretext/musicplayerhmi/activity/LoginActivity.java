@@ -17,15 +17,15 @@ import com.pretext.musicplayerhmi.viewmodel.LoginViewModel;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private LoginViewModel loginViewModel;
-    private ActivityLoginBinding loginBinding;
+    private LoginViewModel mLoginViewModel;
+    private ActivityLoginBinding mLoginBinding;
 
     public void setCurrentUser(String username) {
         ((MusicPlayerApplication) getApplication()).setCurrentUser(username);
     }
 
     public void initObservers() {
-        loginViewModel.getLoginResult().observe(this, result -> {
+        mLoginViewModel.getLoginResult().observe(this, result -> {
             if (result != null) {
                 if (result.isSuccess()) {
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        loginViewModel.getRegisterResult().observe(this, result -> {
+        mLoginViewModel.getRegisterResult().observe(this, result -> {
             if (result != null) {
                 if (result.isSuccess()) {
                     Toast.makeText(this, "Register successful!", Toast.LENGTH_SHORT).show();
@@ -51,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        loginBinding.loginAsTourist.setOnClickListener(view -> {
+        mLoginBinding.loginAsTourist.setOnClickListener(view -> {
             setCurrentUser("GUEST");
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
         });
@@ -61,10 +61,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        loginBinding = DataBindingUtil.setContentView(this, R.layout.activity_login);
-        loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
-        loginBinding.setLoginViewModel(loginViewModel);
-        loginBinding.setLifecycleOwner(this);
+        mLoginBinding = DataBindingUtil.setContentView(this, R.layout.activity_login);
+        mLoginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+        mLoginBinding.setLoginViewModel(mLoginViewModel);
+        mLoginBinding.setLifecycleOwner(this);
 
         MusicPlayerServiceConnection.getInstance().bindService(getApplicationContext());
 

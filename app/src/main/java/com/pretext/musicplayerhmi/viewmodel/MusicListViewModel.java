@@ -16,14 +16,14 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 public class MusicListViewModel extends AndroidViewModel {
-    private final MutableLiveData<List<MusicInfoUtil>> musicList = new MutableLiveData<>();
+    private final MutableLiveData<List<MusicInfoUtil>> mMusicList = new MutableLiveData<>();
 
     public MusicListViewModel(@NonNull Application application) {
         super(application);
     }
 
     public MutableLiveData<List<MusicInfoUtil>> getMusicList() {
-        return musicList;
+        return mMusicList;
     }
 
     public void loadMusicFiles() {
@@ -47,7 +47,7 @@ public class MusicListViewModel extends AndroidViewModel {
                         ));
                     }
 
-                    musicList.postValue(result);
+                    mMusicList.postValue(result);
                 }
             }
         });
