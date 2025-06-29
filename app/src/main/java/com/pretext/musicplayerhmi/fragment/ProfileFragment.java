@@ -24,18 +24,11 @@ import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
     private static final String TAG = "[Profile]";
-    private static ProfileFragment profileFragment;
 
     private ProfileListAdapter profileListAdapter;
     private MusicPlayerViewModel musicPlayerViewModel;
     private CustomListViewModel customListViewModel;
     private FragmentProfileBinding fragmentProfileBinding;
-
-    public static ProfileFragment getInstance() {
-        if (profileFragment == null)
-            profileFragment = new ProfileFragment();
-        return profileFragment;
-    }
 
     public void initMusicList() {
         profileListAdapter = new ProfileListAdapter(getContext(), customListViewModel);
@@ -52,6 +45,7 @@ public class ProfileFragment extends Fragment {
         musicPlayerViewModel = new ViewModelProvider(requireActivity()).get(MusicPlayerViewModel.class);
         customListViewModel = new ViewModelProvider(requireActivity()).get(CustomListViewModel.class);
         fragmentProfileBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_profile, container, false);
+        fragmentProfileBinding.setCustomListViewModel(customListViewModel);
         fragmentProfileBinding.setLifecycleOwner(getViewLifecycleOwner());
 
         initMusicList();
@@ -62,22 +56,27 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         fragmentProfileBinding.btnPlayAll.setOnClickListener(v -> {
             if (!Objects.requireNonNull(customListViewModel.getMusicList().getValue()).isEmpty()) {
                 customListViewModel.playNext();
             }
         });
+
         customListViewModel.getMusicList().observe(getViewLifecycleOwner(), musicList -> {
             Log.d(TAG, "Observe music list change.");
             profileListAdapter.notifyItemInserted(musicList.size());
         });
+
         customListViewModel.getCurrentMusic().observe(getViewLifecycleOwner(), currentMusic -> {
             if (currentMusic != -1) {
                 try {
-                    musicPlayerViewModel.playMusic(customListViewModel.getMusicList().getValue().get(currentMusic), true);
+                    musicPlayerViewModel.playMusic(Objects.requireNonNull(customListViewModel.getMusicList().getValue()).get(currentMusic), true);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
+            } else {
+                musicPlayerViewModel.stopMusic();
             }
         });
     }

@@ -1,9 +1,8 @@
 package com.pretext.musicplayerhmi;
 
+import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
@@ -26,6 +25,7 @@ import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
 import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
+import com.pretext.musicplayerhmi.viewmodel.HistoryViewModel;
 import com.pretext.musicplayerhmi.viewmodel.MusicPlayerViewModel;
 import com.pretext.musicplayerhmi.viewmodel.VolumeViewModel;
 import com.pretext.musicplayerservice.IMusicProgressCallback;
@@ -38,10 +38,14 @@ public class MainActivity extends AppCompatActivity {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
 
     private FragmentManager fragmentManager;
+    private ProfileFragment profileFragment;
+    private MusicListFragment musicListFragment;
+    private HistoryFragment historyFragment;
 
     private MusicPlayerViewModel musicPlayerViewModel;
     private CustomListViewModel customListViewModel;
     private VolumeViewModel volumeViewModel;
+    private HistoryViewModel historyViewModel;
 
     private ActivityMainBinding activityMainBinding;
 
@@ -83,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         return executorService;
     }
 
+    @SuppressLint("DefaultLocale")
     private String formatTime(int time) {
         int seconds = time / 1000;
         int minutes = seconds / 60;
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void resetToDefault() {
-        new Handler(Looper.getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
             Log.d(TAG, "stopPlaying");
             activityMainBinding.musicProgress.setMax(0);
             activityMainBinding.musicProgress.setProgress(0);
@@ -108,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         musicPlayerViewModel.getCurrentMusic().observe(this, currentMusic -> {
             Log.d(TAG, "Observe current music here.");
             if (!((MusicPlayerApplication) getApplication()).getCurrentUser().equals("GUEST"))
-                HistoryFragment.getInstance().addHistoryList(currentMusic.getMusicName());
+                historyViewModel.addHistorList(currentMusic.getMusicName());
         });
     }
 
@@ -194,6 +199,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initMenu() {
+        profileFragment = new ProfileFragment();
+        musicListFragment = new MusicListFragment();
+        historyFragment = new HistoryFragment();
         TabLayout menu = findViewById(R.id.tab_layout);
         menu.addTab(menu.newTab().setText("Music list"));
         menu.addTab(menu.newTab().setText("All music"));
@@ -204,23 +212,23 @@ public class MainActivity extends AppCompatActivity {
                 switch (tab.getPosition()) {
                     case 0:
                         fragmentManager.beginTransaction().
-                                show(ProfileFragment.getInstance()).
-                                hide(MusicListFragment.getInstance()).
-                                hide(HistoryFragment.getInstance()).
+                                show(profileFragment).
+                                hide(musicListFragment).
+                                hide(historyFragment).
                                 commit();
                         break;
                     case 1:
                         fragmentManager.beginTransaction().
-                                hide(ProfileFragment.getInstance()).
-                                show(MusicListFragment.getInstance()).
-                                hide(HistoryFragment.getInstance()).
+                                hide(profileFragment).
+                                show(musicListFragment).
+                                hide(historyFragment).
                                 commit();
                         break;
                     case 2:
                         fragmentManager.beginTransaction().
-                                hide(ProfileFragment.getInstance()).
-                                hide(MusicListFragment.getInstance()).
-                                show(HistoryFragment.getInstance()).
+                                hide(profileFragment).
+                                hide(musicListFragment).
+                                show(historyFragment).
                                 commit();
                         break;
                 }
@@ -239,9 +247,9 @@ public class MainActivity extends AppCompatActivity {
     public void initFragment() {
         fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.frame_layout, ProfileFragment.getInstance(), "Profile").show(ProfileFragment.getInstance());
-        fragmentTransaction.add(R.id.frame_layout, MusicListFragment.getInstance(), "Music List").hide(MusicListFragment.getInstance());
-        fragmentTransaction.add(R.id.frame_layout, HistoryFragment.getInstance(), "History").hide(HistoryFragment.getInstance());
+        fragmentTransaction.add(R.id.frame_layout, profileFragment, "Profile").show(profileFragment);
+        fragmentTransaction.add(R.id.frame_layout, musicListFragment, "Music List").hide(musicListFragment);
+        fragmentTransaction.add(R.id.frame_layout, historyFragment, "History").hide(historyFragment);
         fragmentTransaction.commit();
     }
 
@@ -253,6 +261,8 @@ public class MainActivity extends AppCompatActivity {
 
         musicPlayerViewModel = new ViewModelProvider(this).get(MusicPlayerViewModel.class);
         customListViewModel = new ViewModelProvider(this).get(CustomListViewModel.class);
+        historyViewModel = new ViewModelProvider(this).get(HistoryViewModel.class);
+
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         activityMainBinding.setMusicPlayerViewModel(musicPlayerViewModel);
         activityMainBinding.setLifecycleOwner(this);
@@ -263,7 +273,9 @@ public class MainActivity extends AppCompatActivity {
         initMenu();
         initFragment();
         initPlayerComponent();
+
         resetToDefault();
+
         MusicPlayerServiceConnection.getInstance().setMusicProgressCallback(callback);
         MusicPlayerServiceConnection.getInstance().activateService();
     }

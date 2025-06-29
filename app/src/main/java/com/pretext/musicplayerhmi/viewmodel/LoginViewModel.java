@@ -44,8 +44,16 @@ public class LoginViewModel extends ViewModel {
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                boolean isCorrect = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().authenticatedUser(account, password);
-                loginResult.postValue(new LoginResultUtil(isCorrect, isCorrect ? account : null));
+                if (!account.isBlank() && !password.isBlank()) {
+                    boolean isCorrect = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().authenticatedUser(account, password);
+                    if (isCorrect) {
+                        loginResult.postValue(new LoginResultUtil(true, account));
+                    } else {
+                        loginResult.postValue(new LoginResultUtil(false, null, "Username or password error!"));
+                    }
+                } else {
+                    loginResult.postValue(new LoginResultUtil(false, null, "Username or password is blank!"));
+                }
             } catch (RemoteException e) {
                 loginResult.postValue(new LoginResultUtil(false, null, "Unable to connect service!"));
             } finally {
@@ -59,11 +67,15 @@ public class LoginViewModel extends ViewModel {
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                boolean userExists = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().addNewUser(account, password);
-                if (!userExists) {
-                    registerResult.postValue(new RegisterResultUtil(true, account));
+                if (!account.isBlank() && !password.isBlank()) {
+                    boolean userExists = MusicPlayerServiceConnection.getInstance().getMusicPlayerInterface().addNewUser(account, password);
+                    if (!userExists) {
+                        registerResult.postValue(new RegisterResultUtil(true, account));
+                    } else {
+                        registerResult.postValue(new RegisterResultUtil(false, null, "User already exists!"));
+                    }
                 } else {
-                    registerResult.postValue(new RegisterResultUtil(false, null, "User already exists!"));
+                    registerResult.postValue(new RegisterResultUtil(false, null, "Username or password is blank!"));
                 }
             } catch (RemoteException e) {
                 registerResult.postValue(new RegisterResultUtil(false, null, "Unable to connect service!"));

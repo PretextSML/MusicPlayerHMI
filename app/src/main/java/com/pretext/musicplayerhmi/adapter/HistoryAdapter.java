@@ -8,15 +8,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.viewholder.HistoryViewHolder;
+import com.pretext.musicplayerhmi.viewmodel.HistoryViewModel;
 
-import java.util.List;
+import java.util.Objects;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
-    List<String> historyList;
+    private final HistoryViewModel historyViewModel;
 
-    public HistoryAdapter(List<String> historyList) {
-        this.historyList = historyList;
+    public HistoryAdapter(HistoryViewModel historyViewModel) {
+        this.historyViewModel = historyViewModel;
     }
 
     @NonNull
@@ -28,7 +29,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
-        holder.history.setText(historyList.get(position));
+        holder.history.setText(Objects.requireNonNull(historyViewModel.getHistoryList().getValue()).getHistoryList().get(position));
     }
 
     @Override
@@ -38,6 +39,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     @Override
     public int getItemCount() {
-        return historyList.size();
+        return Objects.requireNonNull(historyViewModel.getHistoryList().getValue()).getHistoryList().size();
     }
 }

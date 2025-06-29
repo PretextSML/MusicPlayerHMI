@@ -1,6 +1,7 @@
 package com.pretext.musicplayerhmi.fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,22 +23,19 @@ import com.pretext.musicplayerhmi.viewmodel.MusicPlayerViewModel;
 public class MusicListFragment extends Fragment {
 
     private static final String TAG = "[MusicListFragment]";
-    private static MusicListFragment musicListFragment;
+
     private MusicListViewModel musicListViewModel;
     private MusicPlayerViewModel musicPlayerViewModel;
     private CustomListViewModel customListViewModel;
     private FragmentMusicListBinding musicListBinding;
 
-    public static MusicListFragment getInstance() {
-        if (musicListFragment == null)
-            musicListFragment = new MusicListFragment();
-        return musicListFragment;
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        musicListViewModel = new ViewModelProvider(this).get(MusicListViewModel.class);
+
+        Log.d(TAG, "Create music list fragment");
+
+        musicListViewModel = new ViewModelProvider(requireActivity()).get(MusicListViewModel.class);
         musicPlayerViewModel = new ViewModelProvider(requireActivity()).get(MusicPlayerViewModel.class);
         customListViewModel = new ViewModelProvider(requireActivity()).get(CustomListViewModel.class);
     }
@@ -46,6 +44,7 @@ public class MusicListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         musicListBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false);
+        musicListBinding.setMusicListViewModel(musicListViewModel);
         musicListBinding.setLifecycleOwner(getViewLifecycleOwner());
 
         return musicListBinding.getRoot();

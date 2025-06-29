@@ -1,26 +1,21 @@
 package com.pretext.musicplayerhmi.viewmodel;
 
-import android.app.Application;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class CustomListViewModel extends AndroidViewModel {
+public class CustomListViewModel extends ViewModel {
 
     private static final String TAG = "[CustomListViewModel]";
     private final MutableLiveData<List<MusicInfoUtil>> musicList = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Integer> currentMusic = new MutableLiveData<>(-1);
-
-    public CustomListViewModel(@NonNull Application application) {
-        super(application);
-    }
 
     public MutableLiveData<List<MusicInfoUtil>> getMusicList() {
         return musicList;
@@ -31,21 +26,25 @@ public class CustomListViewModel extends AndroidViewModel {
     }
 
     public void playNext() {
-        if (!musicList.getValue().isEmpty()) {
-            int current = currentMusic.getValue();
+        if (!Objects.requireNonNull(musicList.getValue()).isEmpty()) {
+            int current = currentMusic.getValue() != null ? currentMusic.getValue() : -1;
             if (current + 1 < musicList.getValue().size()) {
                 Log.d(TAG, "playNext");
                 currentMusic.setValue(current + 1);
+            } else {
+                reset();
             }
         }
     }
 
     public void playPrevious() {
-        if (!musicList.getValue().isEmpty()) {
-            int current = currentMusic.getValue();
+        if (!Objects.requireNonNull(musicList.getValue()).isEmpty()) {
+            int current = currentMusic.getValue() != null ? currentMusic.getValue() : -1;
             if (current - 1 >= 0) {
                 Log.d(TAG, "playPrevious");
                 currentMusic.setValue(current - 1);
+            } else {
+                reset();
             }
         }
     }

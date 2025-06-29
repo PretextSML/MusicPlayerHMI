@@ -58,6 +58,7 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
         holder.musicName.setText(name);
         holder.musicAuthor.setText(author);
         holder.addToMusicList.setVisibility(View.GONE);
+
         loadAlbumCoverAsync(holder, info);
     }
 

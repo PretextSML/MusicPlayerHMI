@@ -24,6 +24,7 @@ import com.pretext.musicplayerhmi.viewmodel.MusicPlayerViewModel;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
@@ -62,7 +63,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
         loadAlbumCoverAsync(holder, info);
 
         holder.addToMusicList.setOnClickListener(v -> {
-            if (!customListViewModel.getMusicList().getValue().contains(info)) {
+            if (!Objects.requireNonNull(customListViewModel.getMusicList().getValue()).contains(info)) {
                 customListViewModel.addToMusicList(info);
                 holder.addToMusicList.setImageResource(R.drawable.playlist_add_check);
             } else {

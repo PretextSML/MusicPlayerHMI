@@ -1,16 +1,14 @@
 package com.pretext.musicplayerhmi.viewmodel;
 
-import android.app.Application;
 import android.os.RemoteException;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 
-public class MusicPlayerViewModel extends AndroidViewModel {
+public class MusicPlayerViewModel extends ViewModel {
 
     private final MutableLiveData<Boolean> isPlaying = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> isPaused = new MutableLiveData<>(false);
@@ -21,10 +19,6 @@ public class MusicPlayerViewModel extends AndroidViewModel {
 
     private final MutableLiveData<MusicInfoUtil> currentMusic = new MutableLiveData<>();
     private final MutableLiveData<String> currentMusicName = new MutableLiveData<>("");
-
-    public MusicPlayerViewModel(@NonNull Application application) {
-        super(application);
-    }
 
     public MutableLiveData<Boolean> getIsPlaying() {
         return isPlaying;
