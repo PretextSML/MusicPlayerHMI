@@ -100,6 +100,7 @@ public class MusicPlayerViewModel extends AndroidViewModel {
 
             isPlaying.setValue(false);
             isPaused.setValue(false);
+            fromList.setValue(false);
 
             currentMusicName.setValue("");
             progress.setValue(0);

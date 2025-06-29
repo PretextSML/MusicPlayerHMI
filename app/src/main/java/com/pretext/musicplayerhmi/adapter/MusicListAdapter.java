@@ -17,7 +17,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
-import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
 import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
@@ -63,8 +62,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
         loadAlbumCoverAsync(holder, info);
 
         holder.addToMusicList.setOnClickListener(v -> {
-            if (!ProfileFragment.getInstance().isInPlayList(info)) {
-                ProfileFragment.getInstance().addToPlayList(info);
+            if (!customListViewModel.getMusicList().getValue().contains(info)) {
                 customListViewModel.addToMusicList(info);
                 holder.addToMusicList.setImageResource(R.drawable.playlist_add_check);
             } else {
@@ -78,7 +76,6 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListViewHolder> 
                 return;
             }
 
-            ProfileFragment.getInstance().reset(true);
             try {
                 musicPlayerViewModel.playMusic(info, false);
             } catch (RemoteException e) {
