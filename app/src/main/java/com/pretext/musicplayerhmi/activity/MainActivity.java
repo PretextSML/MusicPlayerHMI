@@ -1,4 +1,4 @@
-package com.pretext.musicplayerhmi;
+package com.pretext.musicplayerhmi.activity;
 
 import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.tabs.TabLayout;
+import com.pretext.musicplayerhmi.R;
 import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.databinding.ActivityMainBinding;

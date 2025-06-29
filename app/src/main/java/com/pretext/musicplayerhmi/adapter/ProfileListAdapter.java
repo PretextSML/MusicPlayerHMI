@@ -12,21 +12,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
-import com.pretext.musicplayerhmi.MainActivity;
 import com.pretext.musicplayerhmi.R;
+import com.pretext.musicplayerhmi.activity.MainActivity;
 import com.pretext.musicplayerhmi.util.MusicInfoUtil;
 import com.pretext.musicplayerhmi.viewholder.MusicListViewHolder;
 import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
-    private static final String TAG = "[profileListAdapter]";
-    private final Map<Integer, MusicListViewHolder> musicListViewHolderMap = new HashMap<>();
     private final CustomListViewModel customListViewModel;
     private final Context context;
 
@@ -47,7 +43,6 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
     @Override
     public void onBindViewHolder(@NonNull MusicListViewHolder holder, int position) {
         MusicInfoUtil info = Objects.requireNonNull(customListViewModel.getMusicList().getValue()).get(position);
-        musicListViewHolderMap.put(position, holder);
 
         setDefaultAlbumCover(holder);
 
@@ -61,11 +56,6 @@ public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder
 
         loadAlbumCoverAsync(holder, info);
     }
-
-    public MusicListViewHolder getViewHolder(int position) {
-        return musicListViewHolderMap.get(position);
-    }
-
 
     private void setDefaultAlbumCover(MusicListViewHolder holder) {
         Glide.with(context)
