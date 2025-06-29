@@ -21,12 +21,12 @@ import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
 import java.io.IOException;
 import java.util.Objects;
 
-public class ProfileListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
+public class CustomListAdapter extends RecyclerView.Adapter<MusicListViewHolder> {
 
     private final CustomListViewModel mCustomListViewModel;
     private final Context mContext;
 
-    public ProfileListAdapter(Context mContext, CustomListViewModel mCustomListViewModel) {
+    public CustomListAdapter(Context mContext, CustomListViewModel mCustomListViewModel) {
         this.mContext = mContext;
         this.mCustomListViewModel = mCustomListViewModel;
     }

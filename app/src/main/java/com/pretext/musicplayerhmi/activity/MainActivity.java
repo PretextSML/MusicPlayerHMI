@@ -22,9 +22,9 @@ import com.pretext.musicplayerhmi.application.MusicPlayerApplication;
 import com.pretext.musicplayerhmi.connection.MusicPlayerServiceConnection;
 import com.pretext.musicplayerhmi.databinding.ActivityMainBinding;
 import com.pretext.musicplayerhmi.databinding.VolumePopupBinding;
+import com.pretext.musicplayerhmi.fragment.CustomListFragment;
 import com.pretext.musicplayerhmi.fragment.HistoryFragment;
 import com.pretext.musicplayerhmi.fragment.MusicListFragment;
-import com.pretext.musicplayerhmi.fragment.ProfileFragment;
 import com.pretext.musicplayerhmi.viewmodel.CustomListViewModel;
 import com.pretext.musicplayerhmi.viewmodel.HistoryViewModel;
 import com.pretext.musicplayerhmi.viewmodel.MusicPlayerViewModel;
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
 
     private FragmentManager mFragmentManager;
-    private ProfileFragment mProfileFragment;
+    private CustomListFragment mCustomListFragment;
     private MusicListFragment mMusicListFragment;
     private HistoryFragment mHistoryFragment;
 
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initMenu() {
-        mProfileFragment = new ProfileFragment();
+        mCustomListFragment = new CustomListFragment();
         mMusicListFragment = new MusicListFragment();
         mHistoryFragment = new HistoryFragment();
         TabLayout menu = findViewById(R.id.tab_layout);
@@ -213,21 +213,21 @@ public class MainActivity extends AppCompatActivity {
                 switch (tab.getPosition()) {
                     case 0:
                         mFragmentManager.beginTransaction().
-                                show(mProfileFragment).
+                                show(mCustomListFragment).
                                 hide(mMusicListFragment).
                                 hide(mHistoryFragment).
                                 commit();
                         break;
                     case 1:
                         mFragmentManager.beginTransaction().
-                                hide(mProfileFragment).
+                                hide(mCustomListFragment).
                                 show(mMusicListFragment).
                                 hide(mHistoryFragment).
                                 commit();
                         break;
                     case 2:
                         mFragmentManager.beginTransaction().
-                                hide(mProfileFragment).
+                                hide(mCustomListFragment).
                                 hide(mMusicListFragment).
                                 show(mHistoryFragment).
                                 commit();
@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
     public void initFragment() {
         mFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.frame_layout, mProfileFragment, "Profile").show(mProfileFragment);
+        fragmentTransaction.add(R.id.frame_layout, mCustomListFragment, "Profile").show(mCustomListFragment);
         fragmentTransaction.add(R.id.frame_layout, mMusicListFragment, "Music List").hide(mMusicListFragment);
         fragmentTransaction.add(R.id.frame_layout, mHistoryFragment, "History").hide(mHistoryFragment);
         fragmentTransaction.commit();
