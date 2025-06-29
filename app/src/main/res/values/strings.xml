@@ -24,4 +24,8 @@
     <string name="user_history">User History</string>
     <string name="add_to_music_list">add_to_music_list</string>
     <string name="music_album">music_album</string>
+    <string name="login_btn">Login</string>
+    <string name="register_btn">Register</string>
+    <string name="user_password">user_password</string>
+    <string name="user_name">user_name</string>
 </resources>
